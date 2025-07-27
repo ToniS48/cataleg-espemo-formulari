@@ -11,7 +11,7 @@ const CONFIG = {
     
     // Configuración de producción (para GitHub Pages)
     production: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxkOeJisZa91Bo-8THzGWT3aRwl8kqMWFEua4BCuM9x12-7RiGeCNz7YXf6CEn7v1QsXg/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwtkoMR0GwF_xpLTKU4Ug-ufN6f7J_AY-E1v5exzMLXRibPj5q-InydjBldYTvPsK5mmw/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: false
     },
