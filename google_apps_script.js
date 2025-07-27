@@ -1,453 +1,362 @@
-// Script para Google Apps Script - Integración con el formulario HTML
-// Copiar este código en Google Apps Script para integrar el formulario con Google Sheets y Drive
+// GOOGLE APPS SCRIPT - VERSIÓN COMPLETA CON GOOGLE SHEETS
+// Despliega como "Cualquier usuario"
 
-/**
- * Configuración de carpetas en Google Drive
- */
-const CONFIG = {
-  SHEET_ID: 'TU_GOOGLE_SHEET_ID_AQUI', // ID de tu Google Sheet
-  DRIVE_FOLDER_ID: 'TU_CARPETA_DRIVE_ID_AQUI', // ID de la carpeta raíz en Drive
-  FOTOS_FOLDER_NAME: 'Fotos_Cavitats',
-  TOPOS_FOLDER_NAME: 'Topografies_Cavitats'
-};
+// CONFIGURACIÓN - CAMBIA ESTOS VALORES
+const SPREADSHEET_ID = 'TU_SPREADSHEET_ID_AQUI'; // Cambia por tu ID de Google Sheets
+const SHEET_NAME = 'Cavitats'; // Nombre de la hoja donde guardar los datos
+const DRIVE_FOLDER_ID = 'TU_DRIVE_FOLDER_ID_AQUI'; // Cambia por tu ID de carpeta de Google Drive
 
-/**
- * Función para crear carpetas en Google Drive si no existen
- */
-function crearCarpetasSiNoExisten() {
-  try {
-    const carpetaRaiz = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-    
-    // Crear carpeta de fotos si no existe
-    let carpetaFotos;
-    const carpetasFotos = carpetaRaiz.getFoldersByName(CONFIG.FOTOS_FOLDER_NAME);
-    if (carpetasFotos.hasNext()) {
-      carpetaFotos = carpetasFotos.next();
-    } else {
-      carpetaFotos = carpetaRaiz.createFolder(CONFIG.FOTOS_FOLDER_NAME);
-    }
-    
-    // Crear carpeta de topografías si no existe
-    let carpetaTopos;
-    const carpetasTopos = carpetaRaiz.getFoldersByName(CONFIG.TOPOS_FOLDER_NAME);
-    if (carpetasTopos.hasNext()) {
-      carpetaTopos = carpetasTopos.next();
-    } else {
-      carpetaTopos = carpetaRaiz.createFolder(CONFIG.TOPOS_FOLDER_NAME);
-    }
-    
-    return {
-      fotosId: carpetaFotos.getId(),
-      toposId: carpetaTopos.getId()
-    };
-  } catch (error) {
-    console.error('Error al crear carpetas:', error);
-    throw error;
-  }
+function doGet(e) {
+  return handleRequest(e);
 }
 
-/**
- * Función para subir archivos a Google Drive
- */
-function subirArxiu(arxiuBase64, nomArxiu, carpetaId, codiCavitat) {
-  try {
-    // Decodificar base64
-    const arxiuBlob = Utilities.newBlob(
-      Utilities.base64Decode(arxiuBase64),
-      'application/octet-stream',
-      nomArxiu
-    );
-    
-    // Obtener carpeta de destino
-    const carpeta = DriveApp.getFolderById(carpetaId);
-    
-    // Crear subcarpeta para la cavitat si no existe
-    const nomSubcarpeta = codiCavitat;
-    let subcarpeta;
-    const subcarpetesExistents = carpeta.getFoldersByName(nomSubcarpeta);
-    if (subcarpetesExistents.hasNext()) {
-      subcarpeta = subcarpetesExistents.next();
-    } else {
-      subcarpeta = carpeta.createFolder(nomSubcarpeta);
-    }
-    
-    // Subir archivo
-    const arxiu = subcarpeta.createFile(arxiuBlob);
-    
-    // Hacer el archivo público para visualización
-    arxiu.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    return {
-      success: true,
-      fileId: arxiu.getId(),
-      fileName: nomArxiu,
-      url: arxiu.getUrl(),
-      downloadUrl: `https://drive.google.com/uc?id=${arxiu.getId()}`
-    };
-    
-  } catch (error) {
-    console.error('Error al subir archivo:', error);
-    return {
-      success: false,
-      error: error.toString()
-    };
-  }
-}
-/**
- * Función para recibir datos del formulario HTML y guardarlos en Google Sheets y Drive
- */
-function guardarDadesCavitat(dades) {
-  try {
-    // Crear carpetas si no existen
-    const carpetes = crearCarpetasSiNoExisten();
-    
-    // Abrir el Google Sheet
-    const spreadsheet = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-    
-    // Obtener las hojas
-    const hojaMain = spreadsheet.getSheetByName('Dades') || spreadsheet.insertSheet('Dades');
-    const hojaPous = spreadsheet.getSheetByName('Pous') || spreadsheet.insertSheet('Pous');
-    const hojaSales = spreadsheet.getSheetByName('Sales') || spreadsheet.insertSheet('Sales');
-    const hojaTopos = spreadsheet.getSheetByName('Topos') || spreadsheet.insertSheet('Topos');
-    const hojaFotos = spreadsheet.getSheetByName('Fotos') || spreadsheet.insertSheet('Fotos');
-    const hojaBiblio = spreadsheet.getSheetByName('Bibliografia') || spreadsheet.insertSheet('Bibliografia');
-    
-    // Procesar archivos subidos
-    let urlsTopos = [];
-    let urlsFotos = [];
-    
-    // Subir topografías si existen
-    if (dades.topos_arxius && dades.topos_arxius.length > 0) {
-      for (let i = 0; i < dades.topos_arxius.length; i++) {
-        const arxiu = dades.topos_arxius[i];
-        const resultat = subirArxiu(arxiu.data, arxiu.name, carpetes.toposId, dades.codi_id);
-        if (resultat.success) {
-          urlsTopos.push(resultat.url);
-        }
-      }
-    }
-    
-    // Subir fotos si existen
-    if (dades.fotos_arxius && dades.fotos_arxius.length > 0) {
-      for (let i = 0; i < dades.fotos_arxius.length; i++) {
-        const arxiu = dades.fotos_arxius[i];
-        const resultat = subirArxiu(arxiu.data, arxiu.name, carpetes.fotosId, dades.codi_id);
-        if (resultat.success) {
-          urlsFotos.push(resultat.url);
-        }
-      }
-    }
-    
-    // Preparar datos para la hoja principal 'Dades'
-    const dadesMain = [
-      dades.codi_id || '',
-      dades.nom || '',
-      dades.alies || '',
-      dades.municipi || '',
-      dades.zona_utm || '',
-      dades.datum || '',
-      dades.precisio || '',
-      parseFloat(dades.est_x) || '',
-      parseFloat(dades.nort_y) || '',
-      parseFloat(dades.z) || '',
-      parseFloat(dades.latitud) || '',
-      parseFloat(dades.longitud) || '',
-      dades.latitud_gms || '',
-      dades.longitud_gms || '',
-      parseFloat(dades.recorregut_real) || '',
-      parseFloat(dades.recorregut_planta) || '',
-      parseFloat(dades.profunditat) || '',
-      dades.genesis || '',
-      dades.interes_multiple || dades.interes || '',
-      dades.descripcio || '',
-      new Date() // Data de creació
-    ];
-    
-    // Crear encabezados si la hoja está vacía
-    if (hojaMain.getLastRow() === 0) {
-      const encabezadosMain = [
-        'Codi ID', 'Nom', 'Àlies', 'Municipi', 'Zona UTM', 'Datum', 'Precisió',
-        'Est(X)', 'Nort(Y)', 'Z', 'Latitud', 'Longitud', 'Latitud GMS', 'Longitud GMS',
-        'Recorregut Real', 'Recorregut Planta', 'Profunditat',
-        'Gènesi', 'Interès', 'Descripció', 'Data Creació'
-      ];
-      hojaMain.getRange(1, 1, 1, encabezadosMain.length).setValues([encabezadosMain]);
-    }
-    
-    // Agregar datos a la hoja principal
-    hojaMain.appendRow(dadesMain);
-    
-    // Guardar datos dinámicos de Pous
-    if (hojaPous.getLastRow() === 0) {
-      hojaPous.getRange(1, 1, 1, 6).setValues([['Codi ID', 'Nom Cavitat', 'Nom Pou', 'Profunditat', 'Amplada', 'Observacions']]);
-    }
-    
-    // Procesar todos los pozos dinámicos
-    Object.keys(dades).forEach(key => {
-      if (key.startsWith('pou_nom_')) {
-        const pouNumber = key.split('_')[2];
-        const dadesPou = [
-          dades.codi_id || '',
-          dades.nom || '',
-          dades[`pou_nom_${pouNumber}`] || '',
-          parseFloat(dades[`pou_profunditat_${pouNumber}`]) || '',
-          parseFloat(dades[`pou_amplada_${pouNumber}`]) || '',
-          dades[`pou_observacions_${pouNumber}`] || ''
-        ];
-        hojaPous.appendRow(dadesPou);
-      }
-    });
-
-    // Guardar datos dinámicos de Sales
-    if (hojaSales.getLastRow() === 0) {
-      hojaSales.getRange(1, 1, 1, 10).setValues([['Codi ID', 'Nom Cavitat', 'Nom Sala', 'Descripció', 'Llargaria', 'Amplaria', 'Altura', 'Superficie', 'Volum', 'Observacions']]);
-    }
-    
-    // Procesar todas las salas dinámicas
-    Object.keys(dades).forEach(key => {
-      if (key.startsWith('sala_nom_')) {
-        const salaNumber = key.split('_')[2];
-        const dadesSala = [
-          dades.codi_id || '',
-          dades.nom || '',
-          dades[`sala_nom_${salaNumber}`] || '',
-          dades[`sala_descripcio_${salaNumber}`] || '',
-          parseFloat(dades[`sala_llargaria_${salaNumber}`]) || '',
-          parseFloat(dades[`sala_amplaria_${salaNumber}`]) || '',
-          parseFloat(dades[`sala_altura_${salaNumber}`]) || '',
-          parseFloat(dades[`sala_superficie_${salaNumber}`]) || '',
-          parseFloat(dades[`sala_volum_${salaNumber}`]) || '',
-          dades[`sala_observacions_${salaNumber}`] || ''
-        ];
-        hojaSales.appendRow(dadesSala);
-      }
-    });
-    
-    // Guardar datos de topografía con enlaces a Drive
-    if (urlsTopos.length > 0 || dades.topos_comentari) {
-      if (hojaTopos.getLastRow() === 0) {
-        hojaTopos.getRange(1, 1, 1, 4).setValues([['Codi ID', 'Nom Cavitat', 'Enllaços Drive', 'Comentari']]);
-      }
-      
-      const dadesTopos = [
-        dades.codi_id || '',
-        dades.nom || '',
-        urlsTopos.join(', '),
-        dades.topos_comentari || ''
-      ];
-      hojaTopos.appendRow(dadesTopos);
-    }
-    
-    // Guardar datos de fotografías con enlaces a Drive
-    if (urlsFotos.length > 0 || dades.fotos_comentari) {
-      if (hojaFotos.getLastRow() === 0) {
-        hojaFotos.getRange(1, 1, 1, 4).setValues([['Codi ID', 'Nom Cavitat', 'Enllaços Drive', 'Comentari']]);
-      }
-      
-      const dadesFotos = [
-        dades.codi_id || '',
-        dades.nom || '',
-        urlsFotos.join(', '),
-        dades.fotos_comentari || ''
-      ];
-      hojaFotos.appendRow(dadesFotos);
-    }
-    
-    // Guardar datos bibliográficos si existen
-    if (dades.biblio_article || dades.biblio_autor || dades.biblio_llibre) {
-      if (hojaBiblio.getLastRow() === 0) {
-        hojaBiblio.getRange(1, 1, 1, 10).setValues([['Codi id', 'Article', 'Autor', 'Llibre', 'Editorial', 'ISBN', 'Data', 'Tema', 'Tipus', 'Enllaç']]);
-      }
-      
-      const dadesBiblio = [
-        dades.codi_id || '',
-        dades.biblio_article || '',
-        dades.biblio_autor || '',
-        dades.biblio_llibre || '',
-        dades.biblio_editorial || '',
-        dades.biblio_isbn || '',
-        dades.biblio_data || '',
-        dades.biblio_tema || '',
-        dades.biblio_tipus || '',
-        dades.biblio_enllac || ''
-      ];
-      hojaBiblio.appendRow(dadesBiblio);
-    }
-    
-    return {
-      success: true,
-      message: 'Dades guardades correctament a Google Sheets i Drive',
-      codiId: dades.codi_id,
-      fotosSubides: urlsFotos.length,
-      toposSubides: urlsTopos.length
-    };
-    
-  } catch (error) {
-    console.error('Error al guardar dades:', error);
-    return {
-      success: false,
-      message: 'Error al guardar les dades: ' + error.toString()
-    };
-  }
-}
-
-/**
- * Función para obtener la lista de municipios desde la hoja Metadata
- */
-function obtenirMunicipis() {
-  try {
-    const spreadsheet = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-    const hojaMetadata = spreadsheet.getSheetByName('Metadata');
-    
-    if (!hojaMetadata) {
-      return { success: false, message: 'No s\'ha trobat la hoja Metadata' };
-    }
-    
-    const dades = hojaMetadata.getDataRange().getValues();
-    const municipis = {};
-    
-    for (let i = 1; i < dades.length; i++) {
-      const municipi = dades[i][4]; // Columna Municipis
-      const codi = dades[i][5];     // Columna amb codi
-      
-      if (municipi && codi) {
-        municipis[municipi] = codi;
-      }
-    }
-    
-    return { success: true, municipis: municipis };
-    
-  } catch (error) {
-    return { success: false, message: error.toString() };
-  }
-}
-
-/**
- * Función para obtener el siguiente ID disponible para un municipio
- */
-function obtenirSeguentId(codiMunicipi) {
-  try {
-    const spreadsheet = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-    const hojaDades = spreadsheet.getSheetByName('Dades');
-    
-    if (!hojaDades || hojaDades.getLastRow() <= 1) {
-      return 1; // Primer ID
-    }
-    
-    const codisExistents = hojaDades.getRange(2, 1, hojaDades.getLastRow() - 1, 1).getValues();
-    let maxId = 0;
-    
-    codisExistents.forEach(row => {
-      const codi = row[0].toString();
-      if (codi.startsWith(codiMunicipi + '-')) {
-        const numero = parseInt(codi.split('-')[1]);
-        if (numero > maxId) {
-          maxId = numero;
-        }
-      }
-    });
-    
-    return maxId + 1;
-    
-  } catch (error) {
-    console.error('Error al obtenir següent ID:', error);
-    return 1;
-  }
-}
-
-/**
- * Función para crear un servicio web que permita enviar datos desde el formulario HTML
- */
 function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
   try {
-    const dades = JSON.parse(e.postData.contents);
-    const resultat = guardarDadesCavitat(dades);
+    let result = {};
     
-    const response = ContentService
-      .createTextOutput(JSON.stringify(resultat))
+    if (e.postData) {
+      // Manejar FormData desde el formulario
+      if (e.parameter && e.parameter.data) {
+        // Datos enviados como FormData
+        const data = JSON.parse(e.parameter.data);
+        result = saveToSheet(data);
+      } else if (e.postData.contents) {
+        // Datos enviados como JSON (fallback)
+        const data = JSON.parse(e.postData.contents);
+        result = saveToSheet(data);
+      }
+    } else {
+      // Petición GET de prueba
+      result = {
+        success: true,
+        message: 'Google Apps Script funcionando - Listo para guardar en Sheets y Drive',
+        timestamp: new Date().toISOString(),
+        method: 'GET',
+        spreadsheetConfigured: SPREADSHEET_ID !== 'TU_SPREADSHEET_ID_AQUI',
+        driveConfigured: DRIVE_FOLDER_ID !== 'TU_DRIVE_FOLDER_ID_AQUI'
+      };
+    }
+    
+    // Crear respuesta con tipo JSON
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
       
-    // Añadir headers CORS para permitir peticiones desde GitHub Pages
-    return addCorsHeaders(response);
-      
   } catch (error) {
-    const errorResponse = ContentService
+    return ContentService
       .createTextOutput(JSON.stringify({
         success: false,
-        message: 'Error al processar les dades: ' + error.toString()
+        error: error.toString(),
+        timestamp: new Date().toISOString()
       }))
       .setMimeType(ContentService.MimeType.JSON);
-      
-    return addCorsHeaders(errorResponse);
   }
 }
 
-/**
- * Función para obtener datos (GET requests)
- */
-function doGet(e) {
-  const action = e.parameter.action;
-  let responseData;
-  
-  switch (action) {
-    case 'municipis':
-      const municipis = obtenirMunicipis();
-      responseData = municipis;
-      break;
-        
-    case 'nextId':
-      const codiMunicipi = e.parameter.codi;
-      const nextId = obtenirSeguentId(codiMunicipi);
-      responseData = { nextId: nextId };
-      break;
-        
-    default:
-      responseData = { error: 'Acció no reconeguda' };
-      break;
-  }
-  
-  const response = ContentService
-    .createTextOutput(JSON.stringify(responseData))
-    .setMimeType(ContentService.MimeType.JSON);
+function saveToSheet(data) {
+  try {
+    // Verificar configuración
+    if (SPREADSHEET_ID === 'TU_SPREADSHEET_ID_AQUI') {
+      return {
+        success: false,
+        error: 'Google Sheets no configurado. Contacta con el administrador.',
+        timestamp: new Date().toISOString()
+      };
+    }
     
-  return addCorsHeaders(response);
+    if (DRIVE_FOLDER_ID === 'TU_DRIVE_FOLDER_ID_AQUI') {
+      return {
+        success: false,
+        error: 'Google Drive no configurado. Contacta con el administrador.',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    // Guardar archivos en Google Drive primero
+    const fileResults = saveFilesToDrive(data);
+    
+    // Obtener o crear la hoja de cálculo
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    // Si la hoja no existe, crearla con encabezados
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet(SHEET_NAME);
+      setupHeaders(sheet);
+    }
+    
+    // Verificar si ya existen encabezados
+    const lastRow = sheet.getLastRow();
+    if (lastRow === 0) {
+      setupHeaders(sheet);
+    }
+    
+    // Preparar los datos para insertar (incluyendo enlaces a archivos)
+    const rowData = prepareRowData(data, fileResults);
+    
+    // Insertar nueva fila
+    sheet.appendRow(rowData);
+    
+    // Formatear la fila recién insertada
+    const newRowIndex = sheet.getLastRow();
+    formatNewRow(sheet, newRowIndex);
+    
+    return {
+      success: true,
+      message: 'Cavitat guardada correctament en Google Sheets',
+      codiId: data.codi_id || 'No assignat',
+      timestamp: new Date().toISOString(),
+      rowNumber: newRowIndex,
+      spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`,
+      fotosSubides: fileResults.fotosCount,
+      toposSubides: fileResults.toposCount,
+      driveFolder: `https://drive.google.com/drive/folders/${DRIVE_FOLDER_ID}`
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      error: `Error al guardar en Google Sheets: ${error.toString()}`,
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
-/**
- * Función para añadir headers CORS a las respuestas
- */
-function addCorsHeaders(response) {
-  // Permitir peticiones desde cualquier origen (necesario para GitHub Pages)
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  response.setHeader('Access-Control-Max-Age', '3600');
+function setupHeaders(sheet) {
+  const headers = [
+    // Información básica
+    'Timestamp', 'Codi ID', 'Nom', 'Municipi', 'Latitud', 'Longitud', 
+    'Latitud GMS', 'Longitud GMS', 'Altitud', 'Precisió GPS',
+    
+    // Características
+    'Desenvolupament', 'Desnivell', 'Temperatura', 'Interès', 
+    'Estat Conservació', 'Accessibilitat', 'Risc', 'Observacions',
+    
+    // Contextualització
+    'Context Geològic', 'Context Hidrològic', 'Context Espeleològic',
+    
+    // Pous (camps dinàmics - màxim 5)
+    'Pou 1 Nom', 'Pou 1 Profunditat', 'Pou 1 Amplada', 'Pou 1 Observacions',
+    'Pou 2 Nom', 'Pou 2 Profunditat', 'Pou 2 Amplada', 'Pou 2 Observacions',
+    'Pou 3 Nom', 'Pou 3 Profunditat', 'Pou 3 Amplada', 'Pou 3 Observacions',
+    
+    // Sales (camps dinàmics - màxim 5)
+    'Sala 1 Nom', 'Sala 1 Descripció', 'Sala 1 Llargària', 'Sala 1 Amplària', 'Sala 1 Altura', 'Sala 1 Superfície', 'Sala 1 Volum', 'Sala 1 Observacions',
+    'Sala 2 Nom', 'Sala 2 Descripció', 'Sala 2 Llargària', 'Sala 2 Amplària', 'Sala 2 Altura', 'Sala 2 Superfície', 'Sala 2 Volum', 'Sala 2 Observacions',
+    'Sala 3 Nom', 'Sala 3 Descripció', 'Sala 3 Llargària', 'Sala 3 Amplària', 'Sala 3 Altura', 'Sala 3 Superfície', 'Sala 3 Volum', 'Sala 3 Observacions',
+    
+    // Archivos
+    'Topografies (count)', 'Fotos (count)', 'Arxius', 'Drive Links'
+  ];
   
-  return response;
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  
+  // Formatear encabezados
+  const headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#E8F4F8');
+  headerRange.setWrap(true);
+  
+  // Ajustar ancho de columnas
+  sheet.autoResizeColumns(1, headers.length);
 }
 
-// Instrucciones de configuración:
-// 1. Copia este código en un nuevo proyecto de Google Apps Script
-// 2. En CONFIG, reemplaza:
-//    - 'TU_GOOGLE_SHEET_ID_AQUI' con el ID real de tu Google Sheet
-//    - 'TU_CARPETA_DRIVE_ID_AQUI' con el ID de tu carpeta raíz en Google Drive
-// 3. Autoriza los permisos necesarios (Drive, Sheets)
-// 4. Despliega el script como aplicación web con acceso a "Anyone"
-// 5. Copia la URL generada y úsala en el formulario HTML
-// 6. Las carpetas 'Fotos_Cavitats' y 'Topografies_Cavitats' se crearán automáticamente
+function prepareRowData(data, fileResults = null) {
+  const now = new Date();
+  
+  // Procesar intereses múltiples
+  let interesText = '';
+  if (data.interes_multiple) {
+    interesText = data.interes_multiple;
+  } else if (data.interes) {
+    interesText = data.interes;
+  }
+  
+  const rowData = [
+    // Información básica
+    now.toLocaleString('es-ES'),
+    data.codi_id || '',
+    data.nom || '',
+    data.municipi || '',
+    data.latitud || '',
+    data.longitud || '',
+    data.latitud_gms || '',
+    data.longitud_gms || '',
+    data.altitud || '',
+    data.precisio_gps || '',
+    
+    // Características
+    data.desenvolupament || '',
+    data.desnivell || '',
+    data.temperatura || '',
+    interesText,
+    data.estat_conservacio || '',
+    data.accessibilitat || '',
+    data.risc || '',
+    data.observacions || '',
+    
+    // Contextualització
+    data.context_geologic || '',
+    data.context_hidrologic || '',
+    data.context_espeleologic || ''
+  ];
+  
+  // Añadir datos de pous (máximo 3)
+  for (let i = 1; i <= 3; i++) {
+    rowData.push(
+      data[`pou_nom_${i}`] || '',
+      data[`pou_profunditat_${i}`] || '',
+      data[`pou_amplada_${i}`] || '',
+      data[`pou_observacions_${i}`] || ''
+    );
+  }
+  
+  // Añadir datos de sales (máximo 3)
+  for (let i = 1; i <= 3; i++) {
+    rowData.push(
+      data[`sala_nom_${i}`] || '',
+      data[`sala_descripcio_${i}`] || '',
+      data[`sala_llargaria_${i}`] || '',
+      data[`sala_amplaria_${i}`] || '',
+      data[`sala_altura_${i}`] || '',
+      data[`sala_superficie_${i}`] || '',
+      data[`sala_volum_${i}`] || '',
+      data[`sala_observacions_${i}`] || ''
+    );
+  }
+  
+  // Contar archivos y añadir enlaces
+  const toposCount = fileResults ? fileResults.toposCount : (data.topos_arxius ? data.topos_arxius.length : 0);
+  const fotosCount = fileResults ? fileResults.fotosCount : (data.fotos_arxius ? data.fotos_arxius.length : 0);
+  
+  let arxiusInfo = '';
+  if (toposCount > 0) arxiusInfo += `Topografies: ${toposCount}`;
+  if (fotosCount > 0) {
+    if (arxiusInfo) arxiusInfo += ', ';
+    arxiusInfo += `Fotos: ${fotosCount}`;
+  }
+  
+  // Enlaces a Drive
+  let driveLinks = '';
+  if (fileResults && fileResults.driveLinks.length > 0) {
+    driveLinks = fileResults.driveLinks.join('\n');
+  }
+  
+  rowData.push(toposCount, fotosCount, arxiusInfo, driveLinks);
+  
+  return rowData;
+}
 
-/*
-Estructura de carpetas que se creará en Google Drive:
-📁 Carpeta Raíz (CONFIG.DRIVE_FOLDER_ID)
-├── 📁 Fotos_Cavitats/
-│   ├── 📁 ARM-001/
-│   │   ├── 🖼️ foto1.jpg
-│   │   └── 🖼️ foto2.jpg
-│   └── 📁 MOR-001/
-│       └── 🖼️ foto1.jpg
-└── 📁 Topografies_Cavitats/
-    ├── 📁 ARM-001/
-    │   └── 📄 topo1.pdf
-    └── 📁 MOR-001/
-        └── 📄 topo1.svg
-*/
+function formatNewRow(sheet, rowIndex) {
+  const range = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn());
+  
+  // Alternar colores de fila
+  if (rowIndex % 2 === 0) {
+    range.setBackground('#F8F9FA');
+  }
+  
+  // Formatear números
+  const numericColumns = [5, 6, 9, 11, 12, 13]; // Latitud, Longitud, Altitud, etc.
+  numericColumns.forEach(col => {
+    if (col <= sheet.getLastColumn()) {
+      const cell = sheet.getRange(rowIndex, col);
+      if (cell.getValue() !== '') {
+        cell.setNumberFormat('0.000000');
+      }
+    }
+  });
+}
+
+// Función para obtener estadísticas (opcional)
+function getStats() {
+  try {
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    if (!sheet) {
+      return { error: 'Hoja no encontrada' };
+    }
+    
+    const totalRows = sheet.getLastRow() - 1; // Excluir encabezados
+    
+    return {
+      totalCavitats: totalRows,
+      lastUpdate: new Date().toISOString(),
+      spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`
+    };
+  } catch (error) {
+    return { error: error.toString() };
+  }
+}
+
+// Función para guardar archivos en Google Drive
+function saveFilesToDrive(data) {
+  const results = {
+    toposCount: 0,
+    fotosCount: 0,
+    driveLinks: [],
+    errors: []
+  };
+  
+  try {
+    // Obtener la carpeta de Drive
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    
+    // Crear subcarpeta para esta cavitat
+    const cavitatFolder = folder.createFolder(`${data.codi_id || 'SenseID'}_${data.nom || 'SenseNom'}_${new Date().getTime()}`);
+    
+    // Guardar topografías
+    if (data.topos_arxius && data.topos_arxius.length > 0) {
+      const toposFolder = cavitatFolder.createFolder('Topografies');
+      
+      data.topos_arxius.forEach((file, index) => {
+        try {
+          const blob = Utilities.newBlob(
+            Utilities.base64Decode(file.data),
+            file.type,
+            file.name
+          );
+          
+          const driveFile = toposFolder.createFile(blob);
+          results.toposCount++;
+          results.driveLinks.push(`Topo ${index + 1}: ${driveFile.getUrl()}`);
+        } catch (fileError) {
+          results.errors.push(`Error guardando topografía ${file.name}: ${fileError.toString()}`);
+        }
+      });
+    }
+    
+    // Guardar fotos
+    if (data.fotos_arxius && data.fotos_arxius.length > 0) {
+      const fotosFolder = cavitatFolder.createFolder('Fotos');
+      
+      data.fotos_arxius.forEach((file, index) => {
+        try {
+          const blob = Utilities.newBlob(
+            Utilities.base64Decode(file.data),
+            file.type,
+            file.name
+          );
+          
+          const driveFile = fotosFolder.createFile(blob);
+          results.fotosCount++;
+          results.driveLinks.push(`Foto ${index + 1}: ${driveFile.getUrl()}`);
+        } catch (fileError) {
+          results.errors.push(`Error guardando foto ${file.name}: ${fileError.toString()}`);
+        }
+      });
+    }
+    
+    // Añadir enlace a la carpeta principal
+    results.driveLinks.unshift(`Carpeta: ${cavitatFolder.getUrl()}`);
+    
+  } catch (error) {
+    results.errors.push(`Error general en Drive: ${error.toString()}`);
+  }
+  
+  return results;
+}

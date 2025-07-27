@@ -11,7 +11,7 @@ const CONFIG = {
     
     // Configuración de producción (para GitHub Pages)
     production: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzTEjPpt_hDVX68oCGSYgBnSFNsZG0LJNdqr4L8iM_AtTzegM3B_w1jOIfokIyEmAfw2A/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyxBi6IE-oaZX714bdq1yeb6K1bSvs-YL1cr4VBeEiYl1-e-Tg3WdP2oZOyZQjHl7zC1A/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: false
     },
@@ -19,7 +19,7 @@ const CONFIG = {
     // Configuración general (siempre pública)
     general: {
         APP_NAME: 'Formulari ESPEMO',
-        VERSION: '1.0.6',
+        VERSION: '1.0.8',
         AUTHOR: 'ESPEMO',
         CONTACT: 'tonisoler@espemo.org'
     }
