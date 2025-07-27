@@ -659,12 +659,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             // Enviar dades a Google Apps Script usando FormData para evitar preflight CORS
-            const formData = new FormData();
-            formData.append('data', JSON.stringify(data));
+            const requestFormData = new FormData();
+            requestFormData.append('data', JSON.stringify(data));
             
             const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                body: formData,
+                body: requestFormData,
             });
             
             const result = await response.json();
