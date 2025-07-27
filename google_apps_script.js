@@ -158,7 +158,7 @@ function guardarDadesCavitat(dades) {
       parseFloat(dades.recorregut_planta) || '',
       parseFloat(dades.profunditat) || '',
       dades.genesis || '',
-      dades.interes || '',
+      dades.interes_multiple || dades.interes || '',
       dades.descripcio || '',
       new Date() // Data de creació
     ];

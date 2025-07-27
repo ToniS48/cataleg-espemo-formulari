@@ -755,3 +755,76 @@ function mostrarFallbackJSON(data) {
     
     showError('Mode offline activat. Les dades s\'han obert en una nova finestra.');
 }
+
+// Funcions per al multi-select d'Interès
+function toggleInteresDropdown() {
+    const container = document.getElementById('interes-container');
+    container.classList.toggle('open');
+    
+    // Tancar altres dropdowns si estan oberts
+    document.addEventListener('click', function(event) {
+        if (!container.contains(event.target)) {
+            container.classList.remove('open');
+        }
+    });
+}
+
+function updateInteresDisplay() {
+    const checkboxes = document.querySelectorAll('#interes-options input[type="checkbox"]:checked');
+    const selectedSpan = document.getElementById('interes-selected');
+    const container = document.getElementById('interes-container');
+    
+    if (checkboxes.length === 0) {
+        selectedSpan.textContent = 'Selecciona els interessos';
+        // Eliminar comptador si existeix
+        const counter = container.querySelector('.multi-select-selected-count');
+        if (counter) counter.remove();
+    } else if (checkboxes.length === 1) {
+        const label = checkboxes[0].nextElementSibling.textContent;
+        selectedSpan.textContent = label.length > 50 ? label.substring(0, 50) + '...' : label;
+        // Eliminar comptador si existeix
+        const counter = container.querySelector('.multi-select-selected-count');
+        if (counter) counter.remove();
+    } else {
+        selectedSpan.textContent = `${checkboxes.length} interessos seleccionats`;
+        
+        // Afegir comptador visual
+        let counter = container.querySelector('.multi-select-selected-count');
+        if (!counter) {
+            counter = document.createElement('span');
+            counter.className = 'multi-select-selected-count';
+            document.getElementById('interes-selected').appendChild(counter);
+        }
+        counter.textContent = checkboxes.length;
+    }
+}
+
+// Inicialitzar multi-select d'Interès
+document.addEventListener('DOMContentLoaded', function() {
+    // Afegir event listeners als checkboxes d'interès
+    const interesCheckboxes = document.querySelectorAll('#interes-options input[type="checkbox"]');
+    interesCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateInteresDisplay);
+    });
+    
+    // Modificar el processament del formulari per manejar múltiples valors d'interès
+    const originalFormHandler = document.getElementById('cavitatForm');
+    if (originalFormHandler) {
+        originalFormHandler.addEventListener('submit', function(event) {
+            // Interceptar per processar els interessos múltiples
+            const checkedInteresos = document.querySelectorAll('#interes-options input[type="checkbox"]:checked');
+            const interesValues = Array.from(checkedInteresos).map(cb => cb.value);
+            
+            // Crear un camp ocult amb tots els interessos seleccionats
+            let hiddenField = document.getElementById('interes-hidden');
+            if (!hiddenField) {
+                hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = 'interes_multiple';
+                hiddenField.id = 'interes-hidden';
+                this.appendChild(hiddenField);
+            }
+            hiddenField.value = interesValues.join('; ');
+        }, true); // Usar capture per interceptar abans dels altres handlers
+    }
+});

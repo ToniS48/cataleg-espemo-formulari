@@ -118,48 +118,167 @@
                             </select>
                         </div>
                         <div class="form-group half-width">
-                            <label for="interes">Interès</label>
-                            <select id="interes" name="interes">
-                                <option value="">Selecciona l'interès</option>
-                                <option value="Catálogo de Cuevas de especial Interés de la C.V.">Catálogo de Cuevas de especial Interés de la C.V.</option>
-                                <option value="Cavidad artificial: Alberga alguna galería o zona natural.">Cavidad artificial: Alberga alguna galería o zona natural.</option>
-                                <option value="Cavidad artificial: MINA.">Cavidad artificial: MINA.</option>
-                                <option value="Cavidad artificial: Túnel, refugio, bodega, etc.">Cavidad artificial: Túnel, refugio, bodega, etc.</option>
-                                <option value="Cavidad con acceso restringido (puerta).">Cavidad con acceso restringido (puerta).</option>
-                                <option value="Cavidad degradada y/o contaminada.">Cavidad degradada y/o contaminada.</option>
-                                <option value="Cavidad documental o imaginaria NO LOCALIZADA.">Cavidad documental o imaginaria NO LOCALIZADA.</option>
-                                <option value="Cavidad impenetrable por su reducida sección.">Cavidad impenetrable por su reducida sección.</option>
-                                <option value="Cavidad natural que presenta alguna galería o zona artificial.">Cavidad natural que presenta alguna galería o zona artificial.</option>
-                                <option value="Circuito integral y/o varias bocas.">Circuito integral y/o varias bocas.</option>
-                                <option value="Desaparecida /Destruida / Boca totalmente tapada.">Desaparecida /Destruida / Boca totalmente tapada.</option>
-                                <option value="Guerra Civil Española (1936/39)">Guerra Civil Española (1936/39)</option>
-                                <option value="I.científico (1): Fauna invertebrada">I.científico (1): Fauna invertebrada</option>
-                                <option value="I.científico (1): Flora subterránea y/o cerca de la boca.">I.científico (1): Flora subterránea y/o cerca de la boca.</option>
-                                <option value="I.científico (1): Hábitat de murciélagos">I.científico (1): Hábitat de murciélagos</option>
-                                <option value="I.científico (2): Adecuación y/o construcciones antiguas zona entrada">I.científico (2): Adecuación y/o construcciones antiguas zona entrada</option>
-                                <option value="I.científico (2): Arte rupestre">I.científico (2): Arte rupestre</option>
-                                <option value="I.científico (2): Catálogo yacimient. arqueológicos">I.científico (2): Catálogo yacimient. arqueológicos</option>
-                                <option value="I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)">I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)</option>
-                                <option value="I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)">I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)</option>
-                                <option value="I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).">I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).</option>
-                                <option value="I.científico (2): Historias y leyendas populares.">I.científico (2): Historias y leyendas populares.</option>
-                                <option value="I.científico (2): Restos arqueológicos /paleontológicos">I.científico (2): Restos arqueológicos /paleontológicos</option>
-                                <option value="I.científico (3): Característ. geológicas /hidrológicas especiales">I.científico (3): Característ. geológicas /hidrológicas especiales</option>
-                                <option value="I.científico (3): Cavidades con riesgo de hipoxia.">I.científico (3): Cavidades con riesgo de hipoxia.</option>
-                                <option value="I.científico (3): Zonas o puntos con morfologías Hipogénicas.">I.científico (3): Zonas o puntos con morfologías Hipogénicas.</option>
-                                <option value="I.deportivo: Cavidad compleja técnicamente.">I.deportivo: Cavidad compleja técnicamente.</option>
-                                <option value="I.deportivo: Cavidad que no precisa material técnico.">I.deportivo: Cavidad que no precisa material técnico.</option>
-                                <option value="I.deportivo: Descensos verticales notables.">I.deportivo: Descensos verticales notables.</option>
-                                <option value="I.deportivo: Importantes volúmenes subterráneos.">I.deportivo: Importantes volúmenes subterráneos.</option>
-                                <option value="I.deportivo: Práctica del espeleobuceo.">I.deportivo: Práctica del espeleobuceo.</option>
-                                <option value="I.deportivo: Recorrido acuático y/o zonas inundadas">I.deportivo: Recorrido acuático y/o zonas inundadas</option>
-                                <option value="I.deportivo: Recorrido subterráneo importante.">I.deportivo: Recorrido subterráneo importante.</option>
-                                <option value="I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)">I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)</option>
-                                <option value="I.lúdico: Interés fotográfico y/o estético.">I.lúdico: Interés fotográfico y/o estético.</option>
-                                <option value="Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).">Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).</option>
-                                <option value="Zona legislativamente protegida (en general)">Zona legislativamente protegida (en general)</option>
-                                <option value="Tronchon">Tronchon</option>
-                            </select>
+                            <label>Interès</label>
+                            <div class="multi-select-container" id="interes-container">
+                                <div class="multi-select-header" onclick="toggleInteresDropdown()">
+                                    <span id="interes-selected">Selecciona els interessos</span>
+                                    <span class="multi-select-arrow">▼</span>
+                                </div>
+                                <div class="multi-select-options" id="interes-options">
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_1" name="interes" value="Catálogo de Cuevas de especial Interés de la C.V.">
+                                        <label for="interes_1">Catálogo de Cuevas de especial Interés de la C.V.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_2" name="interes" value="Cavidad artificial: Alberga alguna galería o zona natural.">
+                                        <label for="interes_2">Cavidad artificial: Alberga alguna galería o zona natural.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_3" name="interes" value="Cavidad artificial: MINA.">
+                                        <label for="interes_3">Cavidad artificial: MINA.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_4" name="interes" value="Cavidad artificial: Túnel, refugio, bodega, etc.">
+                                        <label for="interes_4">Cavidad artificial: Túnel, refugio, bodega, etc.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_5" name="interes" value="Cavidad con acceso restringido (puerta).">
+                                        <label for="interes_5">Cavidad con acceso restringido (puerta).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_6" name="interes" value="Cavidad degradada y/o contaminada.">
+                                        <label for="interes_6">Cavidad degradada y/o contaminada.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_7" name="interes" value="Cavidad documental o imaginaria NO LOCALIZADA.">
+                                        <label for="interes_7">Cavidad documental o imaginaria NO LOCALIZADA.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_8" name="interes" value="Cavidad impenetrable por su reducida sección.">
+                                        <label for="interes_8">Cavidad impenetrable por su reducida sección.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_9" name="interes" value="Cavidad natural que presenta alguna galería o zona artificial.">
+                                        <label for="interes_9">Cavidad natural que presenta alguna galería o zona artificial.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_10" name="interes" value="Circuito integral y/o varias bocas.">
+                                        <label for="interes_10">Circuito integral y/o varias bocas.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_11" name="interes" value="Desaparecida /Destruida / Boca totalmente tapada.">
+                                        <label for="interes_11">Desaparecida /Destruida / Boca totalmente tapada.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_12" name="interes" value="Guerra Civil Española (1936/39)">
+                                        <label for="interes_12">Guerra Civil Española (1936/39)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_13" name="interes" value="I.científico (1): Fauna invertebrada">
+                                        <label for="interes_13">I.científico (1): Fauna invertebrada</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_14" name="interes" value="I.científico (1): Flora subterránea y/o cerca de la boca.">
+                                        <label for="interes_14">I.científico (1): Flora subterránea y/o cerca de la boca.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_15" name="interes" value="I.científico (1): Hábitat de murciélagos">
+                                        <label for="interes_15">I.científico (1): Hábitat de murciélagos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_16" name="interes" value="I.científico (2): Adecuación y/o construcciones antiguas zona entrada">
+                                        <label for="interes_16">I.científico (2): Adecuación y/o construcciones antiguas zona entrada</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_17" name="interes" value="I.científico (2): Arte rupestre">
+                                        <label for="interes_17">I.científico (2): Arte rupestre</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_18" name="interes" value="I.científico (2): Catálogo yacimient. arqueológicos">
+                                        <label for="interes_18">I.científico (2): Catálogo yacimient. arqueológicos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_19" name="interes" value="I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)">
+                                        <label for="interes_19">I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_20" name="interes" value="I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)">
+                                        <label for="interes_20">I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_21" name="interes" value="I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).">
+                                        <label for="interes_21">I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_22" name="interes" value="I.científico (2): Historias y leyendas populares.">
+                                        <label for="interes_22">I.científico (2): Historias y leyendas populares.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_23" name="interes" value="I.científico (2): Restos arqueológicos /paleontológicos">
+                                        <label for="interes_23">I.científico (2): Restos arqueológicos /paleontológicos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_24" name="interes" value="I.científico (3): Característ. geológicas /hidrológicas especiales">
+                                        <label for="interes_24">I.científico (3): Característ. geológicas /hidrológicas especiales</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_25" name="interes" value="I.científico (3): Cavidades con riesgo de hipoxia.">
+                                        <label for="interes_25">I.científico (3): Cavidades con riesgo de hipoxia.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_26" name="interes" value="I.científico (3): Zonas o puntos con morfologías Hipogénicas.">
+                                        <label for="interes_26">I.científico (3): Zonas o puntos con morfologías Hipogénicas.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_27" name="interes" value="I.deportivo: Cavidad compleja técnicamente.">
+                                        <label for="interes_27">I.deportivo: Cavidad compleja técnicamente.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_28" name="interes" value="I.deportivo: Cavidad que no precisa material técnico.">
+                                        <label for="interes_28">I.deportivo: Cavidad que no precisa material técnico.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_29" name="interes" value="I.deportivo: Descensos verticales notables.">
+                                        <label for="interes_29">I.deportivo: Descensos verticales notables.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_30" name="interes" value="I.deportivo: Importantes volúmenes subterráneos.">
+                                        <label for="interes_30">I.deportivo: Importantes volúmenes subterráneos.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_31" name="interes" value="I.deportivo: Práctica del espeleobuceo.">
+                                        <label for="interes_31">I.deportivo: Práctica del espeleobuceo.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_32" name="interes" value="I.deportivo: Recorrido acuático y/o zonas inundadas">
+                                        <label for="interes_32">I.deportivo: Recorrido acuático y/o zonas inundadas</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_33" name="interes" value="I.deportivo: Recorrido subterráneo importante.">
+                                        <label for="interes_33">I.deportivo: Recorrido subterráneo importante.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_34" name="interes" value="I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)">
+                                        <label for="interes_34">I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_35" name="interes" value="I.lúdico: Interés fotográfico y/o estético.">
+                                        <label for="interes_35">I.lúdico: Interés fotográfico y/o estético.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_36" name="interes" value="Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).">
+                                        <label for="interes_36">Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_37" name="interes" value="Zona legislativamente protegida (en general)">
+                                        <label for="interes_37">Zona legislativamente protegida (en general)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_38" name="interes" value="Tronchon">
+                                        <label for="interes_38">Tronchon</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
