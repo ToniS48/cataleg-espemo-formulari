@@ -724,6 +724,42 @@ document.addEventListener('DOMContentLoaded', function() {
     if (salaCounter === 0) {
         addSala();
     }
+    
+    // Inicialitzar multi-select d'Interès
+    // Afegir event listeners als checkboxes d'interès
+    const interesCheckboxes = document.querySelectorAll('#interes-options input[type="checkbox"]');
+    interesCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateInteresDisplay);
+    });
+    
+    // Afegir event listener per tancar dropdown quan es fa clic fora
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('interes-container');
+        if (container && !container.contains(event.target)) {
+            container.classList.remove('open');
+        }
+    });
+    
+    // Modificar el processament del formulari per manejar múltiples valors d'interès
+    const cavitatForm = document.getElementById('cavitatForm');
+    if (cavitatForm) {
+        cavitatForm.addEventListener('submit', function(event) {
+            // Interceptar per processar els interessos múltiples
+            const checkedInteresos = document.querySelectorAll('#interes-options input[type="checkbox"]:checked');
+            const interesValues = Array.from(checkedInteresos).map(cb => cb.value);
+            
+            // Crear un camp ocult amb tots els interessos seleccionats
+            let hiddenField = document.getElementById('interes-hidden');
+            if (!hiddenField) {
+                hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = 'interes_multiple';
+                hiddenField.id = 'interes-hidden';
+                this.appendChild(hiddenField);
+            }
+            hiddenField.value = interesValues.join('; ');
+        }, true); // Usar capture per interceptar abans dels altres handlers
+    }
 });
 
 // Función para mostrar fallback JSON
@@ -760,13 +796,6 @@ function mostrarFallbackJSON(data) {
 function toggleInteresDropdown() {
     const container = document.getElementById('interes-container');
     container.classList.toggle('open');
-    
-    // Tancar altres dropdowns si estan oberts
-    document.addEventListener('click', function(event) {
-        if (!container.contains(event.target)) {
-            container.classList.remove('open');
-        }
-    });
 }
 
 function updateInteresDisplay() {
@@ -799,32 +828,3 @@ function updateInteresDisplay() {
     }
 }
 
-// Inicialitzar multi-select d'Interès
-document.addEventListener('DOMContentLoaded', function() {
-    // Afegir event listeners als checkboxes d'interès
-    const interesCheckboxes = document.querySelectorAll('#interes-options input[type="checkbox"]');
-    interesCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateInteresDisplay);
-    });
-    
-    // Modificar el processament del formulari per manejar múltiples valors d'interès
-    const originalFormHandler = document.getElementById('cavitatForm');
-    if (originalFormHandler) {
-        originalFormHandler.addEventListener('submit', function(event) {
-            // Interceptar per processar els interessos múltiples
-            const checkedInteresos = document.querySelectorAll('#interes-options input[type="checkbox"]:checked');
-            const interesValues = Array.from(checkedInteresos).map(cb => cb.value);
-            
-            // Crear un camp ocult amb tots els interessos seleccionats
-            let hiddenField = document.getElementById('interes-hidden');
-            if (!hiddenField) {
-                hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = 'interes_multiple';
-                hiddenField.id = 'interes-hidden';
-                this.appendChild(hiddenField);
-            }
-            hiddenField.value = interesValues.join('; ');
-        }, true); // Usar capture per interceptar abans dels altres handlers
-    }
-});
