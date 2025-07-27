@@ -1,0 +1,25 @@
+# Archivos de configuración local
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+
+# Archivos de backup
+*.bak
+*~
+
+# Archivos de desarrollo
+*.dev
+.vscode/settings.json
+
+# Archivos específicos del proyecto
+Catàleg ESPEMO.xlsx
+analizar_excel.py
+generar_formulario_final.py
+metadatos_extraidos.json
+estructura_excel.json
+
+# Nota: google_apps_script.js se mantiene para referencia
