@@ -643,10 +643,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const GOOGLE_SCRIPT_URL = window.ESPEMO_CONFIG?.GOOGLE_SCRIPT_URL;
             const GOOGLE_INTEGRATION_ENABLED = window.ESPEMO_CONFIG?.ENABLE_GOOGLE_INTEGRATION;
             
+            // Debug información
+            console.log('Debug Google Apps Script:', {
+                config: window.ESPEMO_CONFIG,
+                url: GOOGLE_SCRIPT_URL,
+                enabled: GOOGLE_INTEGRATION_ENABLED,
+                hostname: window.location.hostname
+            });
+            
             // Verificar si Google Apps Script está configurado
             if (!GOOGLE_INTEGRATION_ENABLED || !GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'URL_SERA_CONFIGURADA_POR_ADMINISTRADOR') {
                 console.warn('Google Apps Script no configurado. Usando modo fallback.');
-                throw new Error('Google Apps Script no disponible');
+                // En lugar de throw, llamar directamente al fallback
+                mostrarFallbackJSON(data);
+                return;
             }
             
             // Enviar dades a Google Apps Script
@@ -685,25 +695,18 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error al enviar dades:', error);
             
-            // Mostrar les dades en format JSON per a còpia (fallback)
-            const jsonData = JSON.stringify(data, null, 2);
-            const newWindow = window.open('', '_blank');
-            newWindow.document.write(`
-                <html>
-                <head><title>Dades de la Cavitat (Fallback)</title></head>
-                <body>
-                    <h2>Error al connectar amb Google Apps Script</h2>
-                    <p>No s'ha pogut guardar automàticament. Aquí tens les dades en format JSON:</p>
-                    <h3>Dades de la Cavitat - ${data.nom}</h3>
-                    <p><strong>Codi ID:</strong> ${data.codi_id}</p>
-                    <textarea style="width:100%; height:400px;">${jsonData}</textarea>
-                    <br><br>
-                    <button onclick="navigator.clipboard.writeText('${jsonData.replace(/'/g, "\\'")}').then(() => alert('Dades copiades al portaretalls!'))">Copiar JSON</button>
-                </body>
-                </html>
-            `);
+            // Recopilar dades si no están disponibles
+            let data;
+            try {
+                const formData = new FormData(document.getElementById('cavitatForm'));
+                data = Object.fromEntries(formData);
+            } catch (formError) {
+                console.error('Error al obtenir dades del formulari:', formError);
+                showError('Error al processar les dades del formulari');
+                return;
+            }
             
-            showError('No s\'ha pogut connectar amb Google Drive. Les dades s\'han obert en una nova finestra.');
+            mostrarFallbackJSON(data);
         }
         
         // Restaurar botó
@@ -722,3 +725,33 @@ document.addEventListener('DOMContentLoaded', function() {
         addSala();
     }
 });
+
+// Función para mostrar fallback JSON
+function mostrarFallbackJSON(data) {
+    // Mostrar les dades en format JSON per a còpia (fallback)
+    const jsonData = JSON.stringify(data, null, 2);
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(`
+        <html>
+        <head><title>Dades de la Cavitat (Fallback)</title></head>
+        <body>
+            <h2>Formulari funcionant en mode offline</h2>
+            <p>Google Apps Script no està configurat. Aquí tens les dades en format JSON:</p>
+            <h3>Dades de la Cavitat - ${data.nom || 'Sense nom'}</h3>
+            <p><strong>Codi ID:</strong> ${data.codi_id || 'No assignat'}</p>
+            <textarea style="width:100%; height:400px;">${jsonData}</textarea>
+            <br><br>
+            <button onclick="navigator.clipboard.writeText('${jsonData.replace(/'/g, "\\'")}').then(() => alert('Dades copiades al portaretalls!'))">Copiar JSON</button>
+            <br><br>
+            <p><strong>Instruccions:</strong></p>
+            <ul>
+                <li>Copia el JSON de dalt</li>
+                <li>Contacta amb l'administrador per activar Google Drive</li>
+                <li>O guarda aquestes dades manualment</li>
+            </ul>
+        </body>
+        </html>
+    `);
+    
+    showError('Mode offline activat. Les dades s\'han obert en una nova finestra.');
+}

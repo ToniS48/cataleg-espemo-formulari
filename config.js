@@ -29,6 +29,14 @@ const CONFIG = {
 const isGitHubPages = window.location.hostname.includes('github.io');
 const currentConfig = isGitHubPages ? CONFIG.production : CONFIG.development;
 
+// Debug información
+console.log('ESPEMO Config Debug:', {
+    hostname: window.location.hostname,
+    isGitHubPages: isGitHubPages,
+    environment: isGitHubPages ? 'production' : 'development',
+    currentConfig: currentConfig
+});
+
 // Exportar configuración actual
 window.ESPEMO_CONFIG = {
     ...CONFIG.general,
