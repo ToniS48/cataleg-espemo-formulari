@@ -19,7 +19,7 @@ const CONFIG = {
     // Configuración general (siempre pública)
     general: {
         APP_NAME: 'Formulari ESPEMO',
-        VERSION: '1.0.4',
+        VERSION: '1.0.6',
         AUTHOR: 'ESPEMO',
         CONTACT: 'tonisoler@espemo.org'
     }
