@@ -638,9 +638,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // TODO: Configurar la URL del Google Apps Script desplegat
-            // Instruccions a DEPLOY_GITHUB.md
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID_AQUI/exec';
+            // Configuración segura de Google Apps Script
+            // La URL se configura en config.js según el entorno
+            const GOOGLE_SCRIPT_URL = window.ESPEMO_CONFIG?.GOOGLE_SCRIPT_URL;
+            const GOOGLE_INTEGRATION_ENABLED = window.ESPEMO_CONFIG?.ENABLE_GOOGLE_INTEGRATION;
+            
+            // Verificar si Google Apps Script está configurado
+            if (!GOOGLE_INTEGRATION_ENABLED || !GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'URL_SERA_CONFIGURADA_POR_ADMINISTRADOR') {
+                console.warn('Google Apps Script no configurado. Usando modo fallback.');
+                throw new Error('Google Apps Script no disponible');
+            }
             
             // Enviar dades a Google Apps Script
             const response = await fetch(GOOGLE_SCRIPT_URL, {

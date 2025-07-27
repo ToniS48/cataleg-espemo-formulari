@@ -15,6 +15,12 @@ Thumbs.db
 *.dev
 .vscode/settings.json
 
+# Configuraciones sensibles (opcional)
+config.local.js
+secrets.json
+.env
+.env.local
+
 # Archivos específicos del proyecto
 Catàleg ESPEMO.xlsx
 analizar_excel.py
@@ -22,4 +28,5 @@ generar_formulario_final.py
 metadatos_extraidos.json
 estructura_excel.json
 
+# Nota: config.js se mantiene público con valores placeholder
 # Nota: google_apps_script.js se mantiene para referencia
