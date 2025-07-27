@@ -363,17 +363,22 @@ function doPost(e) {
     const dades = JSON.parse(e.postData.contents);
     const resultat = guardarDadesCavitat(dades);
     
-    return ContentService
+    const response = ContentService
       .createTextOutput(JSON.stringify(resultat))
       .setMimeType(ContentService.MimeType.JSON);
       
+    // Añadir headers CORS para permitir peticiones desde GitHub Pages
+    return addCorsHeaders(response);
+      
   } catch (error) {
-    return ContentService
+    const errorResponse = ContentService
       .createTextOutput(JSON.stringify({
         success: false,
         message: 'Error al processar les dades: ' + error.toString()
       }))
       .setMimeType(ContentService.MimeType.JSON);
+      
+    return addCorsHeaders(errorResponse);
   }
 }
 
@@ -382,26 +387,43 @@ function doPost(e) {
  */
 function doGet(e) {
   const action = e.parameter.action;
+  let responseData;
   
   switch (action) {
     case 'municipis':
       const municipis = obtenirMunicipis();
-      return ContentService
-        .createTextOutput(JSON.stringify(municipis))
-        .setMimeType(ContentService.MimeType.JSON);
+      responseData = municipis;
+      break;
         
     case 'nextId':
       const codiMunicipi = e.parameter.codi;
       const nextId = obtenirSeguentId(codiMunicipi);
-      return ContentService
-        .createTextOutput(JSON.stringify({ nextId: nextId }))
-        .setMimeType(ContentService.MimeType.JSON);
+      responseData = { nextId: nextId };
+      break;
         
     default:
-      return ContentService
-        .createTextOutput(JSON.stringify({ error: 'Acció no reconeguda' }))
-        .setMimeType(ContentService.MimeType.JSON);
+      responseData = { error: 'Acció no reconeguda' };
+      break;
   }
+  
+  const response = ContentService
+    .createTextOutput(JSON.stringify(responseData))
+    .setMimeType(ContentService.MimeType.JSON);
+    
+  return addCorsHeaders(response);
+}
+
+/**
+ * Función para añadir headers CORS a las respuestas
+ */
+function addCorsHeaders(response) {
+  // Permitir peticiones desde cualquier origen (necesario para GitHub Pages)
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  response.setHeader('Access-Control-Max-Age', '3600');
+  
+  return response;
 }
 
 // Instrucciones de configuración:
