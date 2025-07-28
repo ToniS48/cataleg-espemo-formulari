@@ -750,6 +750,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`🎯 FINAL - topos_arxius estructura:`, data.topos_arxius.map(t => ({ name: t.name, size: t.size, dataLength: t.data.length })));
             } else {
                 console.log(`ℹ️ No hay topografías para procesar`);
+                // 🔧 FIX: Inicializar como array vacío cuando no hay topografías
+                data.topos_arxius = [];
+                console.log(`🔧 FIX: data.topos_arxius inicializado como array vacío:`, data.topos_arxius);
             }
             
             // Processar arxius de fotos
@@ -780,6 +783,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`🎯 FINAL - fotos_arxius estructura:`, data.fotos_arxius.map(f => ({ name: f.name, size: f.size, dataLength: f.data.length })));
             } else {
                 console.log(`ℹ️ No hay fotos para procesar`);
+                // 🔧 FIX: Inicializar como array vacío cuando no hay fotos
+                data.fotos_arxius = [];
+                console.log(`🔧 FIX: data.fotos_arxius inicializado como array vacío:`, data.fotos_arxius);
             }
             
             // Configuración segura de Google Apps Script
