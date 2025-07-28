@@ -32,13 +32,27 @@ const API_CONFIG = {
 
 // Función para verificar si estamos en modo desarrollo
 function isDevMode() {
-    // MODO INTELIGENTE: Detectar automáticamente el entorno
+    // Detectar hostname actual
     const hostname = window.location.hostname;
-    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
     
-    // En local: usar mock para desarrollo rápido
-    // En producción (GitHub Pages): intentar Google Apps Script, fallback a mock
-    return isLocal || API_CONFIG.DEV_MODE;
+    // Solo usar modo desarrollo si estamos en localhost
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+    
+    // GitHub Pages y otros dominios públicos usan modo producción
+    if (hostname.includes('github.io') || hostname.includes('pages.dev') || hostname.includes('netlify.app')) {
+        console.log(`🌐 Detectado hosting público: ${hostname} - Modo PRODUCCIÓN`);
+        return false; // Forzar modo producción
+    }
+    
+    // Solo localhost usa desarrollo
+    if (isLocalhost) {
+        console.log(`🏠 Detectado localhost: ${hostname} - Modo DESARROLLO`);
+        return true;
+    }
+    
+    // Por defecto, usar producción para cualquier otro dominio
+    console.log(`🌐 Dominio: ${hostname} - Modo PRODUCCIÓN por defecto`);
+    return false;
 }
 
 // Función para obtener la URL base del API

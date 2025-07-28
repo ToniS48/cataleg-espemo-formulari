@@ -117,20 +117,21 @@ class ApiService {
     async makeApiCall(endpoint, params = {}, method = 'GET') {
         // Verificar modo actual dinámicamente
         const currentDevMode = isDevMode(); // Llamar a la función global cada vez
-        console.log(`🔍 makeApiCall - endpoint: ${endpoint}, devMode: ${currentDevMode}, DEV_MODE: ${API_CONFIG.DEV_MODE}`);
+        console.log(`🔍 makeApiCall - endpoint: ${endpoint}, devMode: ${currentDevMode}, hostname: ${window.location.hostname}`);
         
         // Si estamos en modo desarrollo, usar datos mock
         if (currentDevMode) {
             return this.handleMockCall(endpoint, params, method);
         }
 
-        // Modo producción: SOLO JSONP (NO FETCH) para evitar CORS completamente
+        // Modo producción: Intentar JSONP, con fallback a mock si falla
         try {
-            console.log(`🌐 Llamada API real (SOLO JSONP): ${endpoint}`, params);
+            console.log(`🌐 Llamada API real (PRODUCCIÓN): ${endpoint}`, params);
             
             const baseUrl = this.getBaseUrl();
             if (!baseUrl) {
-                throw new Error('URL del API no configurada');
+                console.warn('⚠️ URL del API no configurada, usando fallback a mock');
+                return this.handleMockCall(endpoint, params, method);
             }
             
             // Crear URL con parámetros GET
@@ -146,16 +147,112 @@ class ApiService {
             
             console.log('📡 URL completa JSONP:', url.toString());
             
-            // Usar ÚNICAMENTE JSONP
-            const data = await this.jsonpRequest(url.toString());
+            // Usar JSONP con timeout más corto en producción
+            const data = await this.jsonpRequestWithFallback(url.toString());
             console.log(`✅ Respuesta API JSONP exitosa:`, data);
             
             return data;
 
         } catch (error) {
-            console.error(`❌ Error en llamada API ${endpoint}:`, error);
+            console.warn(`⚠️ Error en API real, usando fallback a mock:`, error.message);
+            // En producción, si falla el API, usar mock como fallback
+            return this.handleMockCall(endpoint, params, method);
+        }
+    }
+
+    // ====== JSONP CON FALLBACK AUTOMÁTICO ======
+    async jsonpRequestWithFallback(url) {
+        try {
+            // Timeout más corto en producción para fallback rápido
+            return await this.jsonpRequestWithTimeout(url, 10000); // 10 segundos
+        } catch (error) {
+            console.warn('⚠️ JSONP falló, probablemente problema con Google Apps Script');
             throw error;
         }
+    }
+
+    // ====== JSONP CON TIMEOUT PERSONALIZABLE ======
+    async jsonpRequestWithTimeout(url, timeoutMs = 30000) {
+        return new Promise((resolve, reject) => {
+            // Crear nombre único para el callback
+            const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Añadir parámetro de callback a la URL
+            const jsonpUrl = url + (url.includes('?') ? '&' : '?') + `callback=${callbackName}`;
+            console.log('📡 JSONP URL:', jsonpUrl);
+            
+            let scriptElement = null;
+            let timeoutId = null;
+            let resolved = false;
+            
+            // Función de limpieza
+            const cleanup = () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                if (scriptElement && scriptElement.parentNode) {
+                    scriptElement.parentNode.removeChild(scriptElement);
+                }
+                if (window[callbackName]) {
+                    delete window[callbackName];
+                }
+            };
+            
+            // Crear función de callback global
+            window[callbackName] = function(data) {
+                if (resolved) return; // Evitar múltiples callbacks
+                resolved = true;
+                
+                console.log('✅ JSONP callback recibido:', data);
+                cleanup();
+                resolve(data);
+            };
+            
+            // Crear script tag
+            scriptElement = document.createElement('script');
+            scriptElement.type = 'text/javascript';
+            scriptElement.async = true;
+            scriptElement.src = jsonpUrl;
+            
+            scriptElement.onload = function() {
+                console.log('📄 Script JSONP cargado exitosamente');
+                // Si después de 3 segundos no hay callback, considerar como error
+                setTimeout(() => {
+                    if (!resolved) {
+                        console.warn('⚠️ Script cargado pero callback no ejecutado');
+                        if (!resolved) {
+                            resolved = true;
+                            cleanup();
+                            reject(new Error('Google Apps Script no respondió correctamente'));
+                        }
+                    }
+                }, 3000);
+            };
+            
+            scriptElement.onerror = function(error) {
+                if (resolved) return;
+                resolved = true;
+                
+                console.error('❌ JSONP script error:', error);
+                cleanup();
+                reject(new Error(`Error cargando Google Apps Script: ${error.message || 'Error de red'}`));
+            };
+            
+            // Timeout personalizable
+            timeoutId = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    console.warn(`⚠️ JSONP timeout después de ${timeoutMs/1000} segundos`);
+                    cleanup();
+                    reject(new Error(`Timeout: Google Apps Script no responde`));
+                }
+            }, timeoutMs);
+            
+            // Añadir script al DOM para ejecutar la petición
+            console.log('📤 Añadiendo script JSONP al DOM...');
+            document.head.appendChild(scriptElement);
+        });
     }
 
     // ====== MANEJO DE DATOS MOCK PARA DESARROLLO ======

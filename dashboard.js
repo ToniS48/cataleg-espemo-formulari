@@ -38,6 +38,9 @@ async function initializeDashboard() {
         // Configurar indicador de modo
         updateDataModeIndicator();
         
+        // Mostrar información del modo actual
+        showCurrentModeInfo();
+        
         // Cargar datos usando ApiService
         await loadRealData();
         
@@ -628,6 +631,43 @@ function openMap() {
 function showError(message) {
     console.error('❌', message);
     // TODO: Implementar sistema de notificaciones
+}
+
+// ====== FUNCIONES DE GESTIÓN DE MODO ======
+
+function showCurrentModeInfo() {
+    const hostname = window.location.hostname;
+    const currentMode = isDevMode() ? 'DESARROLLO' : 'PRODUCCIÓN';
+    const dataSource = isDevMode() ? 'Datos Mock' : 'Google Sheets (con fallback a mock)';
+    
+    console.log(`📊 Modo actual: ${currentMode}`);
+    console.log(`🌐 Hostname: ${hostname}`);
+    console.log(`🗃️ Fuente de datos: ${dataSource}`);
+    
+    // Crear o actualizar indicador visual en el dashboard
+    let modeIndicator = document.getElementById('mode-indicator');
+    if (!modeIndicator) {
+        modeIndicator = document.createElement('div');
+        modeIndicator.id = 'mode-indicator';
+        modeIndicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: ${isDevMode() ? '#28a745' : '#007bff'};
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(modeIndicator);
+    }
+    
+    modeIndicator.innerHTML = `
+        <strong>${currentMode}</strong><br>
+        <small>${dataSource}</small>
+    `;
 }
 
 function updateDataModeIndicator() {
