@@ -28,7 +28,7 @@ body {
 }
 
 .logo-main {
-    max-width: 150px;
+    max-width: 125px;
     height: auto;
     display: inline-block;
     margin: 0;
@@ -585,4 +585,152 @@ input[type="file"]:focus {
     min-width: 20px;
     text-align: center;
     display: inline-block;
+}
+
+/* ====== ESTILOS DE CARGA Y SPINNER ====== */
+
+/* Spinner CSS puro */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estados del botón de envío */
+.btn-enviar {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.btn-enviar.loading {
+    background-color: #95a5a6 !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
+.btn-enviar.loading:hover {
+    background-color: #95a5a6 !important;
+}
+
+/* Overlay de carga para el formulario completo */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.loading-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.loading-content {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+}
+
+.loading-spinner-large {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px auto;
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    font-weight: 500;
+}
+
+.loading-subtext {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin: 0;
+}
+
+/* Indicador de progreso para archivos */
+.file-progress {
+    background-color: #e8f4fd;
+    border: 1px solid #3498db;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+    display: none;
+}
+
+.file-progress.active {
+    display: block;
+}
+
+.file-progress-text {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.file-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.file-progress-fill {
+    height: 100%;
+    background-color: #3498db;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Estados de éxito y error */
+.success-message {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    display: none;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    display: none;
 }

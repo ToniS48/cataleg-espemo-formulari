@@ -13,6 +13,95 @@ let salaCounter = 0;
 let toposFiles = [];
 let fotosFiles = [];
 
+// ====== FUNCIONES DE UI E INDICADORES DE CARGA ======
+
+// Mostrar overlay de carga
+function showLoadingOverlay(text = 'Guardant cavitat...', subtext = 'Processant arxius i dades, si us plau espera') {
+    const overlay = document.getElementById('loadingOverlay');
+    const textElement = overlay.querySelector('.loading-text');
+    const subtextElement = overlay.querySelector('.loading-subtext');
+    
+    if (textElement) textElement.textContent = text;
+    if (subtextElement) subtextElement.textContent = subtext;
+    
+    overlay.classList.add('active');
+}
+
+// Ocultar overlay de carga
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    overlay.classList.remove('active');
+}
+
+// Mostrar progreso de archivos
+function showFileProgress(current = 0, total = 0, type = 'arxius') {
+    const progressDiv = document.getElementById('fileProgress');
+    const textSpan = document.getElementById('fileProgressText');
+    const fillDiv = document.getElementById('fileProgressFill');
+    
+    if (total === 0) {
+        progressDiv.classList.remove('active');
+        return;
+    }
+    
+    progressDiv.classList.add('active');
+    textSpan.textContent = `${current}/${total} ${type}`;
+    
+    const percentage = total > 0 ? (current / total) * 100 : 0;
+    fillDiv.style.width = `${percentage}%`;
+}
+
+// Ocultar progreso de archivos
+function hideFileProgress() {
+    const progressDiv = document.getElementById('fileProgress');
+    progressDiv.classList.remove('active');
+}
+
+// Mostrar mensaje de éxito
+function showSuccessMessage(message = 'La cavitat s\'ha guardat correctament.') {
+    const successDiv = document.getElementById('successMessage');
+    const textPart = successDiv.innerHTML.split('</strong>')[1];
+    successDiv.innerHTML = `<strong>✅ Èxit!</strong> ${message}`;
+    successDiv.style.display = 'block';
+    
+    // Auto-ocultar después de 5 segundos
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Mostrar mensaje de error
+function showErrorMessage(message = 'Hi ha hagut un problema guardant la cavitat.') {
+    const errorDiv = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    errorText.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    // Auto-ocultar después de 8 segundos
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 8000);
+}
+
+// Activar estado de carga en botón
+function setButtonLoading(button, isLoading = true, loadingText = 'Guardant...') {
+    if (isLoading) {
+        button.originalText = button.textContent;
+        button.innerHTML = `<span class="spinner"></span>${loadingText}`;
+        button.classList.add('loading');
+        button.disabled = true;
+    } else {
+        button.innerHTML = button.originalText || 'Guardar Cavitat';
+        button.classList.remove('loading');
+        button.disabled = false;
+    }
+}
+
+// Función helper para mostrar errores (backward compatibility)
+function showError(message) {
+    showErrorMessage(message);
+}
+
 // Funció per mostrar/ocultar tabs
 function showTab(tabName) {
     // Ocultar tots els continguts
@@ -610,20 +699,28 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('📝 Datos básicos:', { codiId, nom, municipi });
         
         if (!codiId || !nom || !municipi) {
-            showError('Si us plau, omple els camps obligatoris (Codi ID, Nom, Municipi)');
+            showErrorMessage('Si us plau, omple els camps obligatoris (Codi ID, Nom, Municipi)');
             return;
         }
         
-        // Mostrar indicador de càrrega
+        // Activar indicadores de carga
         const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Guardant...';
-        submitBtn.disabled = true;
+        setButtonLoading(submitBtn, true, 'Processant...');
+        showLoadingOverlay('Guardant cavitat...', 'Preparant dades per a l\'enviament');
         
         try {
             // Recopilar totes les dades del formulari
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
+            
+            // Calcular total de archivos para progreso
+            const totalFiles = toposFiles.length + fotosFiles.length;
+            let processedFiles = 0;
+            
+            if (totalFiles > 0) {
+                showFileProgress(0, totalFiles);
+                showLoadingOverlay('Processant arxius...', `Convertint ${totalFiles} arxius per a la càrrega`);
+            }
             
             // Processar arxius de topografies
             console.log(`🔍 DEBUG - toposFiles array:`, toposFiles);
@@ -634,6 +731,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < toposFiles.length; i++) {
                     const file = toposFiles[i];
                     console.log(`📄 Procesando topo ${i + 1}/${toposFiles.length}: ${file.name}`);
+                    
+                    // Actualizar progreso
+                    showFileProgress(processedFiles + 1, totalFiles, 'topografies');
+                    showLoadingOverlay('Processant topografies...', `${file.name} (${i + 1}/${toposFiles.length})`);
+                    
                     const base64 = await fileToBase64(file);
                     data.topos_arxius.push({
                         name: file.name,
@@ -641,6 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: file.type,
                         size: file.size
                     });
+                    processedFiles++;
                     console.log(`✅ Topografía ${i + 1} procesada: ${file.name} (${file.size} bytes, base64 length: ${base64.length})`);
                 }
                 console.log(`🎯 FINAL - Total topografías preparadas: ${data.topos_arxius.length}`);
@@ -658,6 +761,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < fotosFiles.length; i++) {
                     const file = fotosFiles[i];
                     console.log(`📸 Procesando foto ${i + 1}/${fotosFiles.length}: ${file.name}`);
+                    
+                    // Actualizar progreso
+                    showFileProgress(processedFiles + 1, totalFiles, 'fotos');
+                    showLoadingOverlay('Processant fotos...', `${file.name} (${i + 1}/${fotosFiles.length})`);
+                    
                     const base64 = await fileToBase64(file);
                     data.fotos_arxius.push({
                         name: file.name,
@@ -665,6 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: file.type,
                         size: file.size
                     });
+                    processedFiles++;
                     console.log(`✅ Foto ${i + 1} procesada: ${file.name} (${file.size} bytes, base64 length: ${base64.length})`);
                 }
                 console.log(`🎯 FINAL - Total fotos preparadas: ${data.fotos_arxius.length}`);
@@ -689,10 +798,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verificar si Google Apps Script está configurado
             if (!GOOGLE_INTEGRATION_ENABLED || !GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'URL_SERA_CONFIGURADA_POR_ADMINISTRADOR') {
                 console.warn('Google Apps Script no configurado. Usando modo fallback.');
+                hideFileProgress();
+                hideLoadingOverlay();
+                setButtonLoading(submitBtn, false);
                 // En lugar de throw, llamar directamente al fallback
                 mostrarFallbackJSON(data);
                 return;
             }
+            
+            // Cambiar a modo de envío
+            hideFileProgress();
+            showLoadingOverlay('Enviant dades...', 'Comunicant amb el servidor de Google');
+            setButtonLoading(submitBtn, true, 'Enviant...');
             
             console.log('🚀 Enviando datos a Google Apps Script...', {
                 url: GOOGLE_SCRIPT_URL,
@@ -739,31 +856,44 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             console.log('📋 Resultado parseado:', result);
             
+            // Ocultar indicadores de carga
+            hideLoadingOverlay();
+            setButtonLoading(submitBtn, false);
+            
             if (result.success) {
-                let message = `Cavitat guardada correctament!\nCodi ID: ${result.codiId}`;
+                let message = `Cavitat guardada correctament! Codi ID: ${result.codiId}`;
                 if (result.fotosSubides) {
-                    message += `\nFotos subides: ${result.fotosSubides}`;
+                    message += ` | Fotos subides: ${result.fotosSubides}`;
                 }
                 if (result.toposSubides) {
-                    message += `\nTopografies subides: ${result.toposSubides}`;
+                    message += ` | Topografies subides: ${result.toposSubides}`;
                 }
                 console.log('✅ Éxito:', message);
-                alert(message);
+                
+                // Mostrar mensaje de éxito en lugar de alert
+                showSuccessMessage(message);
                 
                 // Netejar esborrany
                 localStorage.removeItem('cavitatEsborrany');
                 
-                // Opcional: reiniciar formulari
-                if (confirm('Vols afegir una nova cavitat?')) {
-                    clearForm();
-                }
+                // Opcional: reiniciar formulari después de un delay
+                setTimeout(() => {
+                    if (confirm('Vols afegir una nova cavitat?')) {
+                        clearForm();
+                    }
+                }, 1000);
             } else {
                 console.error('❌ Error del servidor:', result);
-                showError('Error al guardar: ' + result.message);
+                showErrorMessage('Error al guardar: ' + result.message);
             }
             
         } catch (error) {
             console.error('Error al enviar dades:', error);
+            
+            // Ocultar indicadores de carga
+            hideLoadingOverlay();
+            hideFileProgress();
+            setButtonLoading(submitBtn, false);
             
             // Recopilar dades si no están disponibles
             let data;
@@ -772,16 +902,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 data = Object.fromEntries(formData);
             } catch (formError) {
                 console.error('Error al obtenir dades del formulari:', formError);
-                showError('Error al processar les dades del formulari');
+                showErrorMessage('Error al processar les dades del formulari');
                 return;
             }
             
-            mostrarFallbackJSON(data);
+            // Mostrar error específico
+            showErrorMessage(`Error de conexió: ${error.message}`);
+            
+            // Mostrar fallback después de un delay
+            setTimeout(() => {
+                mostrarFallbackJSON(data);
+            }, 2000);
         }
-        
-        // Restaurar botó
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
     });
     
     // Carregar esborrany al carregar la pàgina

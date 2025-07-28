@@ -515,9 +515,35 @@
             <div class="btn-container">
                 <button type="button" class="btn btn-secondary" onclick="clearForm()">Netejar</button>
                 <button type="button" class="btn btn-primary" onclick="saveAsDraft()">Guardar Esborrany</button>
-                <button type="submit" class="btn btn-success">Guardar Cavitat</button>
+                <button type="submit" class="btn btn-success btn-enviar">Guardar Cavitat</button>
             </div>
         </form>
+    </div>
+
+    <!-- Overlay de Carga -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner-large"></div>
+            <div class="loading-text">Guardant cavitat...</div>
+            <div class="loading-subtext">Processant arxius i dades, si us plau espera</div>
+        </div>
+    </div>
+
+    <!-- Indicador de Progreso de Archivos -->
+    <div id="fileProgress" class="file-progress">
+        <div class="file-progress-text">Processant arxius: <span id="fileProgressText">0/0</span></div>
+        <div class="file-progress-bar">
+            <div id="fileProgressFill" class="file-progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- Mensajes de Estado -->
+    <div id="successMessage" class="success-message">
+        <strong>✅ Èxit!</strong> La cavitat s'ha guardat correctament.
+    </div>
+
+    <div id="errorMessage" class="error-message">
+        <strong>❌ Error:</strong> <span id="errorText">Hi ha hagut un problema guardant la cavitat.</span>
     </div>
 
     <script src="script.js"></script>
