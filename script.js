@@ -377,11 +377,22 @@ function handleFileSelection(type) {
     const fileList = document.getElementById(`${type}_file_list`);
     const files = Array.from(fileInput.files);
     
+    console.log(`🔧 handleFileSelection called for type: ${type}`);
+    console.log(`🔧 fileInput.files:`, fileInput.files);
+    console.log(`🔧 fileInput.files.length:`, fileInput.files.length);
+    console.log(`🔧 Array.from(fileInput.files):`, files);
+    console.log(`🔧 files.length:`, files.length);
+    console.log(`🔧 files names:`, files.map(f => f.name));
+    
     // Actualizar array global
     if (type === 'topos') {
         toposFiles = files;
+        console.log(`🔧 toposFiles updated:`, toposFiles);
+        console.log(`🔧 toposFiles.length:`, toposFiles.length);
     } else if (type === 'fotos') {
         fotosFiles = files;
+        console.log(`🔧 fotosFiles updated:`, fotosFiles);
+        console.log(`🔧 fotosFiles.length:`, fotosFiles.length);
     }
     
     // Mostrar lista de archivos
@@ -615,9 +626,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = Object.fromEntries(formData);
             
             // Processar arxius de topografies
+            console.log(`🔍 DEBUG - toposFiles array:`, toposFiles);
+            console.log(`🔍 DEBUG - toposFiles.length:`, toposFiles.length);
             if (toposFiles.length > 0) {
+                console.log(`📁 Procesando ${toposFiles.length} topografías:`, toposFiles.map(f => f.name));
                 data.topos_arxius = [];
-                for (const file of toposFiles) {
+                for (let i = 0; i < toposFiles.length; i++) {
+                    const file = toposFiles[i];
+                    console.log(`📄 Procesando topo ${i + 1}/${toposFiles.length}: ${file.name}`);
                     const base64 = await fileToBase64(file);
                     data.topos_arxius.push({
                         name: file.name,
@@ -625,13 +641,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: file.type,
                         size: file.size
                     });
+                    console.log(`✅ Topografía ${i + 1} procesada: ${file.name} (${file.size} bytes, base64 length: ${base64.length})`);
                 }
+                console.log(`🎯 FINAL - Total topografías preparadas: ${data.topos_arxius.length}`);
+                console.log(`🎯 FINAL - topos_arxius estructura:`, data.topos_arxius.map(t => ({ name: t.name, size: t.size, dataLength: t.data.length })));
+            } else {
+                console.log(`ℹ️ No hay topografías para procesar`);
             }
             
             // Processar arxius de fotos
+            console.log(`🔍 DEBUG - fotosFiles array:`, fotosFiles);
+            console.log(`🔍 DEBUG - fotosFiles.length:`, fotosFiles.length);
             if (fotosFiles.length > 0) {
+                console.log(`📷 Procesando ${fotosFiles.length} fotos:`, fotosFiles.map(f => f.name));
                 data.fotos_arxius = [];
-                for (const file of fotosFiles) {
+                for (let i = 0; i < fotosFiles.length; i++) {
+                    const file = fotosFiles[i];
+                    console.log(`📸 Procesando foto ${i + 1}/${fotosFiles.length}: ${file.name}`);
                     const base64 = await fileToBase64(file);
                     data.fotos_arxius.push({
                         name: file.name,
@@ -639,7 +665,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: file.type,
                         size: file.size
                     });
+                    console.log(`✅ Foto ${i + 1} procesada: ${file.name} (${file.size} bytes, base64 length: ${base64.length})`);
                 }
+                console.log(`🎯 FINAL - Total fotos preparadas: ${data.fotos_arxius.length}`);
+                console.log(`🎯 FINAL - fotos_arxius estructura:`, data.fotos_arxius.map(f => ({ name: f.name, size: f.size, dataLength: f.data.length })));
+            } else {
+                console.log(`ℹ️ No hay fotos para procesar`);
             }
             
             // Configuración segura de Google Apps Script
@@ -669,12 +700,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataSize: JSON.stringify(data).length
             });
             
+            // 🔍 DEBUG CRÍTICO - Verificar estructura de archivos antes del envío
+            console.log('🔍 ESTRUCTURA DE ARCHIVOS ANTES DEL ENVÍO:');
+            console.log('📄 data.topos_arxius:', data.topos_arxius);
+            console.log('📸 data.fotos_arxius:', data.fotos_arxius);
+            if (data.topos_arxius) {
+                console.log(`📊 Topografías: ${data.topos_arxius.length} archivos`);
+                data.topos_arxius.forEach((topo, i) => {
+                    console.log(`   ${i + 1}. ${topo.name} (${topo.type}, ${topo.size} bytes)`);
+                });
+            }
+            if (data.fotos_arxius) {
+                console.log(`📊 Fotos: ${data.fotos_arxius.length} archivos`);
+                data.fotos_arxius.forEach((foto, i) => {
+                    console.log(`   ${i + 1}. ${foto.name} (${foto.type}, ${foto.size} bytes)`);
+                });
+            }
+            
             // Volver a FormData para evitar CORS preflight
             const requestFormData = new FormData();
             requestFormData.append('data', JSON.stringify(data));
             
             console.log('📡 Realizando petición POST con FormData...');
-            console.log('📦 Datos que se envían:', JSON.stringify(data, null, 2));
+            console.log('📦 Tamaño del JSON que se envía:', JSON.stringify(data).length, 'caracteres');
+            // No imprimir el JSON completo porque puede ser muy grande con las imágenes
             
             const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
