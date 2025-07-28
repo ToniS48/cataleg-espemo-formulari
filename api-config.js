@@ -3,7 +3,7 @@
 
 const API_CONFIG = {
     // URL del Google Apps Script desplegado (NUEVA implementación con CORS y API)
-    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwhFkJ9MpAKgi2dKrT0e59KfN7DpzrlTuJnaPRsloEIDD0At0_axxZhh0MLCjRDuexHlA/exec',
+    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzHPyPvGHj5G3x5QTGs1ts4cZpbhbEwFeZQ2qhNwkSACJaQVjcjZE733GQiC0F4ei4MgA/exec',
     
     // Endpoints disponibles
     ENDPOINTS: {
