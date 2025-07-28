@@ -335,21 +335,57 @@ function getMunicipis() {
 function saveCavitat(e) {
   try {
     console.log('💾 Iniciando saveCavitat...');
+    console.log('📋 Parámetros completos recibidos:', JSON.stringify(e));
     
-    // Obtener datos del POST
+    // Obtener datos del POST - múltiples formas de recibir datos
     let postData;
+    
+    // Método 1: Datos en e.postData.contents (JSON directo)
     if (e.postData && e.postData.contents) {
-      postData = JSON.parse(e.postData.contents);
-    } else if (e.parameter && e.parameter.data) {
-      postData = JSON.parse(e.parameter.data);
-    } else {
+      try {
+        postData = JSON.parse(e.postData.contents);
+        console.log('✅ Datos obtenidos de postData.contents');
+      } catch (parseError) {
+        console.log('❌ Error parseando postData.contents:', parseError);
+      }
+    }
+    
+    // Método 2: Datos en e.parameter.data (parámetro data)
+    if (!postData && e.parameter && e.parameter.data) {
+      try {
+        postData = JSON.parse(e.parameter.data);
+        console.log('✅ Datos obtenidos de parameter.data');
+      } catch (parseError) {
+        console.log('❌ Error parseando parameter.data:', parseError);
+      }
+    }
+    
+    // Método 3: Datos directamente en e.parameter (FormData procesado)
+    if (!postData && e.parameter) {
+      // Filtrar parámetros que no sean parte de los datos del formulario
+      const filteredParams = {...e.parameter};
+      delete filteredParams.action;
+      delete filteredParams.callback;
+      
+      if (Object.keys(filteredParams).length > 0) {
+        postData = filteredParams;
+        console.log('✅ Datos obtenidos de parameter directo');
+      }
+    }
+    
+    if (!postData) {
       return {
         success: false,
-        error: 'No se encontraron datos para guardar'
+        error: 'No se encontraron datos para guardar',
+        debug: {
+          hasPostData: !!e.postData,
+          hasParameter: !!e.parameter,
+          parameterKeys: e.parameter ? Object.keys(e.parameter) : []
+        }
       };
     }
     
-    console.log('📋 Datos recibidos:', JSON.stringify(postData));
+    console.log('📋 Datos procesados:', JSON.stringify(postData));
     
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
     const cavitatsSheet = spreadsheet.getSheetByName(MAIN_SHEET_NAME);
@@ -365,16 +401,26 @@ function saveCavitat(e) {
     if (!postData.ID) {
       const lastRow = cavitatsSheet.getLastRow();
       postData.ID = 'CAV' + (lastRow + 1).toString().padStart(4, '0');
+      console.log('🔢 ID generado:', postData.ID);
     }
     
-    // Obtener headers
+    // Añadir timestamp si no existe
+    if (!postData.timestamp) {
+      postData.timestamp = new Date().toISOString();
+    }
+    
+    // Obtener headers de la hoja
     const headers = cavitatsSheet.getRange(1, 1, 1, cavitatsSheet.getLastColumn()).getValues()[0];
+    console.log('📋 Headers de la hoja:', headers);
     
     // Preparar datos para la fila
     const rowData = [];
     for (let header of headers) {
-      rowData.push(postData[header] || '');
+      const value = postData[header] || '';
+      rowData.push(value);
     }
+    
+    console.log('📝 Datos para insertar:', rowData);
     
     // Añadir fila
     cavitatsSheet.appendRow(rowData);
@@ -386,7 +432,8 @@ function saveCavitat(e) {
       message: 'Cavitat guardada correctamente',
       data: {
         id: postData.ID,
-        timestamp: new Date().toISOString()
+        timestamp: postData.timestamp,
+        rowNumber: cavitatsSheet.getLastRow()
       }
     };
     
@@ -394,7 +441,8 @@ function saveCavitat(e) {
     console.error('❌ Error en saveCavitat:', error);
     return {
       success: false,
-      error: error.toString()
+      error: error.toString(),
+      stack: error.stack
     };
   }
 }

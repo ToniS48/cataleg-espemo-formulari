@@ -842,6 +842,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Volver a FormData para evitar CORS preflight
             const requestFormData = new FormData();
+            requestFormData.append('action', 'saveCavitat');
             requestFormData.append('data', JSON.stringify(data));
             
             console.log('📡 Realizando petición POST con FormData...');
