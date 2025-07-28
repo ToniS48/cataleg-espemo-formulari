@@ -14,6 +14,7 @@ Thumbs.db
 # Archivos de desarrollo
 *.dev
 .vscode/settings.json
+CatalegESPEMO.code-workspace
 
 # Configuraciones sensibles (opcional)
 config.local.js

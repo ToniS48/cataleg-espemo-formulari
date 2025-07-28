@@ -330,7 +330,7 @@ function getStats() {
   }
 }
 
-// Función para guardar archivos en Google Drive organizados por municipios
+// Función para guardar archivos en Google Drive
 function saveFilesToDrive(data) {
   const results = {
     toposCount: 0,
@@ -339,34 +339,12 @@ function saveFilesToDrive(data) {
     errors: []
   };
   
-  // Si no hay archivos, no crear carpetas
-  const hasFiles = (data.topos_arxius && data.topos_arxius.length > 0) || 
-                   (data.fotos_arxius && data.fotos_arxius.length > 0);
-  
-  if (!hasFiles) {
-    return results; // Retornar sin crear carpetas si no hay archivos
-  }
-  
   try {
-    // Obtener la carpeta principal de Drive
-    const mainFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    // Obtener la carpeta de Drive
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
     
-    // Crear o obtener carpeta del municipio
-    const municipiName = data.municipi || 'Sense Municipi';
-    let municipiFolder = null;
-    
-    // Buscar si ya existe la carpeta del municipio
-    const municipiFolders = mainFolder.getFoldersByName(municipiName);
-    if (municipiFolders.hasNext()) {
-      municipiFolder = municipiFolders.next();
-    } else {
-      // Crear nueva carpeta para el municipio
-      municipiFolder = mainFolder.createFolder(municipiName);
-    }
-    
-    // Crear subcarpeta para esta cavitat dentro del municipio
-    const cavitatFolderName = `${data.codi_id || 'SenseID'}_${data.nom || 'SenseNom'}_${new Date().getTime()}`;
-    const cavitatFolder = municipiFolder.createFolder(cavitatFolderName);
+    // Crear subcarpeta para esta cavitat
+    const cavitatFolder = folder.createFolder(`${data.codi_id || 'SenseID'}_${data.nom || 'SenseNom'}_${new Date().getTime()}`);
     
     // Guardar topografías
     if (data.topos_arxius && data.topos_arxius.length > 0) {
@@ -410,9 +388,8 @@ function saveFilesToDrive(data) {
       });
     }
     
-    // Añadir enlaces a las carpetas
-    results.driveLinks.unshift(`Carpeta Cavitat: ${cavitatFolder.getUrl()}`);
-    results.driveLinks.unshift(`Carpeta Municipi (${municipiName}): ${municipiFolder.getUrl()}`);
+    // Añadir enlace a la carpeta principal
+    results.driveLinks.unshift(`Carpeta: ${cavitatFolder.getUrl()}`);
     
   } catch (error) {
     results.errors.push(`Error general en Drive: ${error.toString()}`);

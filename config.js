@@ -2,16 +2,16 @@
 // Este archivo contiene configuraciones que pueden ser públicas
 
 const CONFIG = {
-    // Configuración de desarrollo (para pruebas locales)
+    // Configuración de desarrollo (para pruebas locales) - TEMPORAL CON GOOGLE HABILITADO
     development: {
-        GOOGLE_SCRIPT_URL: null, // Usa fallback JSON
-        ENABLE_GOOGLE_INTEGRATION: false,
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwbbFtTV7bYbFvVBigXe1czzD9AMxDZdCIwAFH4URQ3u9bjGPhjc0zNZ65CqtFhz0w5oA/exec',
+        ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: true
     },
     
     // Configuración de producción (para GitHub Pages)
     production: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyxBi6IE-oaZX714bdq1yeb6K1bSvs-YL1cr4VBeEiYl1-e-Tg3WdP2oZOyZQjHl7zC1A/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwbbFtTV7bYbFvVBigXe1czzD9AMxDZdCIwAFH4URQ3u9bjGPhjc0zNZ65CqtFhz0w5oA/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: false
     },

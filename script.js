@@ -2,7 +2,7 @@
 // JavaScript functionality
 
 // Dades de municipis
-const municipis = {"Ares del Maestrat": "ARM", "Castell de Cabres": "CDC", "Castellfort": "CAF", "Cinctorres": "CNT", "Forcall": "FOR", "Herbers": "HER", "La Mata": "MAT", "Morella": "MOR", "Olocau del Rey": "OLO", "Palanques": "PAL", "La Pobla de Benifassà": "POB", "Portell": "POR", "Sorita": "SOR", "Todolella": "TOD", "Vallibona": "VBN", "Vilafranca": "VLF", "Villores": "VIL"};
+const municipis = {"Ares del Maestrat": "ARM", "Castell de Cabres": "CDC", "Castellfort": "CAF", "Cinctorres": "CNT", "Forcall": "FOR", "Herbers": "HER", "La Mata": "MAT", "Morella": "MOR", "Olocau del Rey": "OLO", "Palanques": "PAL", "La Pobla de Benifassà": "POB", "Portell": "POR", "Sorita": "SOR", "Todolella": "TOD", "Tronchon": "TRO", "Vallibona": "VBN", "Vilafranca": "VLF", "Villores": "VIL"};
 
 // Comptador global per generar IDs únics
 let nextId = 1;
@@ -589,10 +589,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('cavitatForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        console.log('🎯 Iniciando envío del formulario...');
+        
         // Validacions bàsiques
         const codiId = document.getElementById('codi_id').value;
         const nom = document.getElementById('nom').value;
         const municipi = document.getElementById('municipi').value;
+        
+        console.log('📝 Datos básicos:', { codiId, nom, municipi });
         
         if (!codiId || !nom || !municipi) {
             showError('Si us plau, omple els camps obligatoris (Codi ID, Nom, Municipi)');
@@ -658,16 +662,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 mostrarFallbackJSON(data);
                 return;
             }
-            // Enviar dades a Google Apps Script usando FormData para evitar preflight CORS
+            
+            console.log('🚀 Enviando datos a Google Apps Script...', {
+                url: GOOGLE_SCRIPT_URL,
+                dataKeys: Object.keys(data),
+                dataSize: JSON.stringify(data).length
+            });
+            
+            // Volver a FormData para evitar CORS preflight
             const requestFormData = new FormData();
             requestFormData.append('data', JSON.stringify(data));
+            
+            console.log('📡 Realizando petición POST con FormData...');
+            console.log('📦 Datos que se envían:', JSON.stringify(data, null, 2));
             
             const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: requestFormData,
             });
             
+            console.log('📥 Respuesta recibida:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
+            
             const result = await response.json();
+            console.log('📋 Resultado parseado:', result);
             
             if (result.success) {
                 let message = `Cavitat guardada correctament!\nCodi ID: ${result.codiId}`;
@@ -677,6 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.toposSubides) {
                     message += `\nTopografies subides: ${result.toposSubides}`;
                 }
+                console.log('✅ Éxito:', message);
                 alert(message);
                 
                 // Netejar esborrany
@@ -687,6 +709,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearForm();
                 }
             } else {
+                console.error('❌ Error del servidor:', result);
                 showError('Error al guardar: ' + result.message);
             }
             
