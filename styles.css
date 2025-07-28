@@ -59,6 +59,14 @@ body {
     color: #2c3e50;
 }
 
+/* Navegación */
+.nav-section {
+    text-align: left;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
 .form-section {
     margin-bottom: 25px;
     border: 1px solid #ddd;
@@ -733,4 +741,58 @@ input[type="file"]:focus {
     border-radius: 6px;
     margin: 15px 0;
     display: none;
+}
+
+/* ====== ESTILOS PARA MODO EDICIÓN ====== */
+
+/* Info box en modo edición */
+.info-box[style*="background-color: #e8f4fd"] {
+    border-left: 4px solid #3498db;
+    background-color: #e8f4fd !important;
+    color: #2980b9;
+}
+
+/* Campos readonly en modo edición */
+.readonly {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+}
+
+/* Botón de cancelar en modo edición */
+.btn.btn-outline {
+    background-color: transparent;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.btn.btn-outline:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Indicador visual de cambios */
+.field-changed {
+    border-left: 3px solid #f39c12 !important;
+    background-color: #fef9e7;
+}
+
+/* Resaltar campos obligatorios en edición */
+.edit-mode .form-group.required label::after {
+    content: ' *';
+    color: #e74c3c;
+}
+
+/* Estados de validación específicos para edición */
+.edit-mode .form-group.valid input,
+.edit-mode .form-group.valid select,
+.edit-mode .form-group.valid textarea {
+    border-left: 3px solid #27ae60;
+}
+
+.edit-mode .form-group.invalid input,
+.edit-mode .form-group.invalid select,
+.edit-mode .form-group.invalid textarea {
+    border-left: 3px solid #e74c3c;
 }

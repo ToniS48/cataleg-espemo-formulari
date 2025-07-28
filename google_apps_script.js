@@ -21,7 +21,84 @@ function doPost(e) {
 
 function handleRequest(e) {
   try {
+    // Manejar peticiones OPTIONS para CORS preflight
+    if (e.parameter && e.parameter.httpMethod === 'OPTIONS') {
+      return ContentService
+        .createTextOutput('')
+        .setMimeType(ContentService.MimeType.TEXT)
+        .setHeaders({
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Max-Age': '3600'
+        });
+    }
+    
     let result = {};
+    
+    // ====== MANEJO DE ACCIONES DEL API ======
+    const action = e.parameter && e.parameter.action;
+    const callback = e.parameter && e.parameter.callback; // Para JSONP
+    
+    // Si hay una acción específica del API, manejarla
+    if (action) {
+      console.log('🎯 Acción API detectada:', action);
+      
+      switch (action) {
+        case 'ping':
+          result = {
+            success: true,
+            message: 'Google Apps Script funcionando correctamente',
+            timestamp: new Date().toISOString(),
+            version: '2.0.0',
+            cors: 'enabled'
+          };
+          break;
+          
+        case 'getStats':
+          result = getStatsFromSheets();
+          break;
+          
+        case 'getAllCavitats':
+          result = getAllCavitatsFromSheets(e.parameter);
+          break;
+          
+        case 'getCavitatById':
+          result = getCavitatByIdFromSheets(e.parameter.id);
+          break;
+          
+        case 'getMunicipis':
+          result = getMunicipis();
+          break;
+          
+        default:
+          result = {
+            success: false,
+            error: `Acción no reconocida: ${action}`,
+            availableActions: ['ping', 'getStats', 'getAllCavitats', 'getCavitatById', 'getMunicipis']
+          };
+      }
+      
+      // Si es JSONP (tiene callback), devolver como función JavaScript
+      if (callback) {
+        console.log('📡 Devolviendo respuesta JSONP con callback:', callback);
+        return ContentService
+          .createTextOutput(`${callback}(${JSON.stringify(result)})`)
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      
+      // Retornar respuesta API normal con headers CORS
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeaders({
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        });
+    }
+    
+    // ====== LÓGICA ORIGINAL PARA FORMULARIOS ======
     
     // Debug: Log de toda la petición
     console.log('📥 Petición recibida:', {
@@ -45,6 +122,22 @@ function handleRequest(e) {
         // Datos enviados como JSON directo
         data = JSON.parse(e.postData.contents);
         console.log('✅ JSON directo parseado correctamente');
+        
+        // Si tiene 'action', es una llamada API
+        if (data.action) {
+          console.log('🎯 Llamada API detectada en POST:', data.action);
+          const apiResult = handleApiCall(data);
+          
+          return ContentService
+            .createTextOutput(JSON.stringify(apiResult))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders({
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            });
+        }
+        
       } catch (parseError) {
         console.log('❌ Error parseando JSON directo:', parseError.toString());
       }
@@ -84,10 +177,15 @@ function handleRequest(e) {
       };
     }
     
-    // Crear respuesta con tipo JSON
+    // Crear respuesta con tipo JSON y headers CORS
     return ContentService
       .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      });
       
   } catch (error) {
     return ContentService
@@ -96,7 +194,12 @@ function handleRequest(e) {
         error: error.toString(),
         timestamp: new Date().toISOString()
       }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      });
   }
 }
 
@@ -716,4 +819,284 @@ function saveFilesToDrive(data) {
   }
   
   return results;
+}
+
+// ====== FUNCIONES DEL API PARA EL DASHBOARD ======
+
+// Manejar llamadas API centralizadas
+function handleApiCall(data) {
+  const action = data.action;
+  console.log('🎯 Procesando acción API:', action, data);
+  
+  try {
+    switch (action) {
+      case 'ping':
+        return {
+          success: true,
+          message: 'Google Apps Script funcionando correctamente',
+          timestamp: new Date().toISOString(),
+          version: '2.0.0',
+          cors: 'enabled'
+        };
+        
+      case 'getStats':
+        return getStatsFromSheets();
+        
+      case 'getAllCavitats':
+        return getAllCavitatsFromSheets(data);
+        
+      case 'getCavitatById':
+        return getCavitatByIdFromSheets(data.id);
+        
+      case 'getMunicipis':
+        return getMunicipis();
+        
+      default:
+        return {
+          success: false,
+          error: `Acción no reconocida: ${action}`,
+          availableActions: ['ping', 'getStats', 'getAllCavitats', 'getCavitatById', 'getMunicipis']
+        };
+    }
+  } catch (error) {
+    console.error('❌ Error en handleApiCall:', error);
+    return {
+      success: false,
+      error: error.toString(),
+      action: action
+    };
+  }
+}
+
+// Obtener estadísticas de todas las hojas
+function getStatsFromSheets() {
+  try {
+    console.log('📊 Obteniendo estadísticas de Google Sheets...');
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    
+    // Obtener datos de la hoja principal
+    const cavitatsSheet = spreadsheet.getSheetByName(MAIN_SHEET_NAME);
+    const totalCavitats = cavitatsSheet ? Math.max(0, cavitatsSheet.getLastRow() - 1) : 0;
+    
+    // Obtener estadísticas de hojas relacionadas
+    const totalPozos = getSheetRowCount(spreadsheet, POZOS_SHEET_NAME);
+    const totalSalas = getSheetRowCount(spreadsheet, SALAS_SHEET_NAME);
+    const totalFotos = getSheetRowCount(spreadsheet, FOTOS_SHEET_NAME);
+    const totalTopos = getSheetRowCount(spreadsheet, TOPOS_SHEET_NAME);
+    
+    // Obtener municipios únicos
+    let totalMunicipis = 0;
+    let profunditatMitjana = 0;
+    
+    if (cavitatsSheet && totalCavitats > 0) {
+      const data = cavitatsSheet.getDataRange().getValues();
+      const municipis = new Set();
+      let sumProfunditat = 0;
+      let countProfunditat = 0;
+      
+      for (let i = 1; i < data.length; i++) { // Saltar encabezados
+        const municipi = data[i][4]; // Columna de municipio
+        const profunditat = parseFloat(data[i][21]) || 0; // Columna de profundidad
+        
+        if (municipi) municipis.add(municipi);
+        if (profunditat > 0) {
+          sumProfunditat += profunditat;
+          countProfunditat++;
+        }
+      }
+      
+      totalMunicipis = municipis.size;
+      profunditatMitjana = countProfunditat > 0 ? sumProfunditat / countProfunditat : 0;
+    }
+    
+    const stats = {
+      success: true,
+      data: {
+        totalCavitats,
+        totalMunicipis,
+        totalFotos,
+        totalTopos,
+        totalPozos,
+        totalSalas,
+        profunditatMitjana: Math.round(profunditatMitjana * 100) / 100,
+        lastUpdate: new Date().toISOString()
+      }
+    };
+    
+    console.log('📊 Estadísticas obtenidas:', stats.data);
+    return stats;
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo estadísticas:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+// Obtener todas las cavitats con filtros opcionales
+function getAllCavitatsFromSheets(params = {}) {
+  try {
+    console.log('🗃️ Obteniendo cavitats con filtros:', params);
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(MAIN_SHEET_NAME);
+    
+    if (!sheet) {
+      return {
+        success: false,
+        error: 'Hoja de cavitats no encontrada'
+      };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return {
+        success: true,
+        data: [],
+        count: 0
+      };
+    }
+    
+    const headers = data[0];
+    const cavitats = [];
+    
+    // Convertir filas a objetos
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const cavitat = {
+        id: row[1] || `cavitat_${i}`, // Codi ID
+        nom: row[2] || '',
+        alies: row[3] || '',
+        municipi: row[4] || '',
+        latitud: row[5] || '',
+        longitud: row[6] || '',
+        altitud: row[9] || '',
+        genesis: row[16] || '',
+        interes: row[17] || '',
+        descripcio: row[18] || '',
+        profunditat: parseFloat(row[21]) || 0,
+        timestamp: row[0] || ''
+      };
+      
+      // Aplicar filtros
+      let incluir = true;
+      
+      if (params.municipi && cavitat.municipi.toLowerCase().indexOf(params.municipi.toLowerCase()) === -1) {
+        incluir = false;
+      }
+      
+      if (params.genesis && cavitat.genesis.toLowerCase().indexOf(params.genesis.toLowerCase()) === -1) {
+        incluir = false;
+      }
+      
+      if (params.minProfunditat && cavitat.profunditat < parseFloat(params.minProfunditat)) {
+        incluir = false;
+      }
+      
+      if (params.searchText) {
+        const searchLower = params.searchText.toLowerCase();
+        const searchableText = `${cavitat.nom} ${cavitat.alies} ${cavitat.municipi} ${cavitat.descripcio}`.toLowerCase();
+        if (searchableText.indexOf(searchLower) === -1) {
+          incluir = false;
+        }
+      }
+      
+      if (incluir) {
+        cavitats.push(cavitat);
+      }
+    }
+    
+    console.log(`🗃️ ${cavitats.length} cavitats encontradas (de ${data.length - 1} totales)`);
+    
+    return {
+      success: true,
+      data: cavitats,
+      count: cavitats.length
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo cavitats:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+// Obtener una cavitat específica por ID
+function getCavitatByIdFromSheets(id) {
+  try {
+    console.log('🔍 Buscando cavitat con ID:', id);
+    const allCavitats = getAllCavitatsFromSheets();
+    
+    if (!allCavitats.success) {
+      return allCavitats;
+    }
+    
+    const cavitat = allCavitats.data.find(c => c.id === id);
+    
+    if (!cavitat) {
+      return {
+        success: false,
+        error: `Cavitat con ID ${id} no encontrada`
+      };
+    }
+    
+    return {
+      success: true,
+      data: cavitat
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo cavitat por ID:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+// Obtener lista de municipios únicos
+function getMunicipis() {
+  try {
+    console.log('🏘️ Obteniendo lista de municipios...');
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(MAIN_SHEET_NAME);
+    
+    if (!sheet) {
+      return {
+        success: false,
+        error: 'Hoja de cavitats no encontrada'
+      };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    const municipis = new Set();
+    
+    // Obtener municipios únicos (columna 4, índice 4)
+    for (let i = 1; i < data.length; i++) { // Saltar encabezados
+      const municipi = data[i][4];
+      if (municipi) {
+        municipis.add(municipi);
+      }
+    }
+    
+    const municipisList = Array.from(municipis).sort();
+    
+    console.log(`🏘️ ${municipisList.length} municipios encontrados:`, municipisList);
+    
+    return {
+      success: true,
+      data: municipisList,
+      count: municipisList.length
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo municipios:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
 }

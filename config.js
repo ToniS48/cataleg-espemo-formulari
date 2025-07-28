@@ -4,14 +4,14 @@
 const CONFIG = {
     // Configuración de desarrollo (para pruebas locales) - TEMPORAL CON GOOGLE HABILITADO
     development: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwbbFtTV7bYbFvVBigXe1czzD9AMxDZdCIwAFH4URQ3u9bjGPhjc0zNZ65CqtFhz0w5oA/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwhFkJ9MpAKgi2dKrT0e59KfN7DpzrlTuJnaPRsloEIDD0At0_axxZhh0MLCjRDuexHlA/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: true
     },
     
     // Configuración de producción (para GitHub Pages)
     production: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwbbFtTV7bYbFvVBigXe1czzD9AMxDZdCIwAFH4URQ3u9bjGPhjc0zNZ65CqtFhz0w5oA/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwhFkJ9MpAKgi2dKrT0e59KfN7DpzrlTuJnaPRsloEIDD0At0_axxZhh0MLCjRDuexHlA/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: false
     },

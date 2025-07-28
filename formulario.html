@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulari d'Inscripció de Cavitats - ESPEMO</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="data-mock.js"></script>
+    <script src="form-manager.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo principal centrado -->
+        <div class="logo-principal">
+            <img src="espeleo1_BN.png" alt="ESPEMO Espeleo" class="logo-main">
+            <img src="logoEspemo.png" alt="Logo ESPEMO" class="logo-secondary-inline">
+        </div>
+        
+        <div class="header">
+            <h1>Catàleg de Cavitats d'ESPEMO</h1>
+            <h2>Formulari d'Inscripció</h2>
+        </div>
+
+        <!-- Navegación al Dashboard -->
+        <div class="nav-section">
+            <button type="button" class="btn btn-secondary" onclick="goToDashboard()">
+                ← Tornar al Dashboard
+            </button>
+        </div>
+
+        <div class="info-box">
+            <strong>Informació:</strong> El codi ID es genera automàticament basant-se en el municipi seleccionat.
+        </div>
+
+        <div class="error-box" id="errorBox">
+            <strong>Error:</strong> <span id="errorMessage"></span>
+        </div>
+
+        <form id="cavitatForm">
+            <div class="tabs">
+                <button type="button" class="tab active" onclick="showTab('dades')">Dades Generals</button>
+                <button type="button" class="tab" onclick="showTab('localitzacio')">Localització</button>
+                <button type="button" class="tab" onclick="showTab('mesures')">Mesures</button>
+                <button type="button" class="tab" onclick="showTab('altres')">Altres Dades</button>
+            </div>
+
+            <!-- Tab 1: Dades Generals -->
+            <div id="dades" class="tab-content active">
+                <div class="form-section">
+                    <h3>Identificació</h3>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="codi_id">Codi ID *</label>
+                            <input type="text" id="codi_id" name="codi_id" readonly class="readonly" 
+                                   placeholder="Es genera automàticament">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="nom">Nom *</label>
+                            <input type="text" id="nom" name="nom" required>
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="alies">Àlies</label>
+                            <input type="text" id="alies" name="alies">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="municipi">Municipi *</label>
+                            <div class="combobox-container">
+                                <input type="text" id="municipi" name="municipi" required 
+                                       placeholder="Escriu o selecciona un municipi..." 
+                                       autocomplete="off" 
+                                       oninput="filterMunicipis()" 
+                                       onblur="handleMunicipiBlur()"
+                                       onfocus="showMunicipiList()">
+                                <div id="municipi-dropdown" class="dropdown-list">
+                                    <div class="dropdown-item" data-value="Ares del Maestrat" data-code="ARM">Ares del Maestrat (ARM)</div>
+                                    <div class="dropdown-item" data-value="Castell de Cabres" data-code="CDC">Castell de Cabres (CDC)</div>
+                                    <div class="dropdown-item" data-value="Castellfort" data-code="CAF">Castellfort (CAF)</div>
+                                    <div class="dropdown-item" data-value="Cinctorres" data-code="CNT">Cinctorres (CNT)</div>
+                                    <div class="dropdown-item" data-value="Forcall" data-code="FOR">Forcall (FOR)</div>
+                                    <div class="dropdown-item" data-value="Herbers" data-code="HER">Herbers (HER)</div>
+                                    <div class="dropdown-item" data-value="La Mata" data-code="MAT">La Mata (MAT)</div>
+                                    <div class="dropdown-item" data-value="Morella" data-code="MOR">Morella (MOR)</div>
+                                    <div class="dropdown-item" data-value="Olocau del Rey" data-code="OLO">Olocau del Rey (OLO)</div>
+                                    <div class="dropdown-item" data-value="Palanques" data-code="PAL">Palanques (PAL)</div>
+                                    <div class="dropdown-item" data-value="La Pobla de Benifassà" data-code="POB">La Pobla de Benifassà (POB)</div>
+                                    <div class="dropdown-item" data-value="Portell" data-code="POR">Portell (POR)</div>
+                                    <div class="dropdown-item" data-value="Sorita" data-code="SOR">Sorita (SOR)</div>
+                                    <div class="dropdown-item" data-value="Todolella" data-code="TOD">Todolella (TOD)</div>
+                                    <div class="dropdown-item" data-value="Tronchon" data-code="TRO">Tronchon (TRO)</div>
+                                    <div class="dropdown-item" data-value="Vallibona" data-code="VBN">Vallibona (VBN)</div>
+                                    <div class="dropdown-item" data-value="Vilafranca" data-code="VLF">Vilafranca (VLF)</div>
+                                    <div class="dropdown-item" data-value="Villores" data-code="VIL">Villores (VIL)</div>
+                                </div>
+                            </div>
+                            <div id="new-municipi-info" class="new-municipi-info">
+                                <strong>Nou municipi:</strong> S'utilitzarà un codi generat automàticament (NOU-XXX)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Classificació</h3>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="genesis">Gènesi</label>
+                            <select id="genesis" name="genesis">
+                                <option value="">Selecciona la gènesi</option>
+                                <option value="A1.- Cavidades en fracturas tectónicas">A1.- Cavidades en fracturas tectónicas</option>
+                                <option value="A2.- Cavidades estructurales">A2.- Cavidades estructurales</option>
+                                <option value="B1.1- Sumider.fósiles CON rec.horizontal">B1.1- Sumider.fósiles CON rec.horizontal</option>
+                                <option value="B1.2- Sumider.fósiles SIN rec.horizontal">B1.2- Sumider.fósiles SIN rec.horizontal</option>
+                                <option value="B2.- Surgencias fósiles">B2.- Surgencias fósiles</option>
+                                <option value="B3.- Cavidades laberínticas freáticas">B3.- Cavidades laberínticas freáticas</option>
+                                <option value="C1.- Surgenc.activas temporales (Ullals)">C1.- Surgenc.activas temporales (Ullals)</option>
+                                <option value="C2.- Sumideros activos temporales">C2.- Sumideros activos temporales</option>
+                                <option value="D1.- Surgencias activas permanentes">D1.- Surgencias activas permanentes</option>
+                                <option value="D2.- Cavidades con cursos activos perman">D2.- Cavidades con cursos activos perman</option>
+                                <option value="F1.- Abrigos / Covachos">F1.- Abrigos / Covachos</option>
+                                <option value="F2.- Cavidades litorales">F2.- Cavidades litorales</option>
+                                <option value="F3.- Arcos naturales">F3.- Arcos naturales</option>
+                                <option value="G1.- Clastos desprendidos en el exterior">G1.- Clastos desprendidos en el exterior</option>
+                                <option value="Z1.- Cavidades artificiales">Z1.- Cavidades artificiales</option>
+                                <option value="ZZ - Pendiente de identificar">ZZ - Pendiente de identificar</option>
+                            </select>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Interès</label>
+                            <div class="multi-select-container" id="interes-container">
+                                <div class="multi-select-header" onclick="toggleInteresDropdown()">
+                                    <span id="interes-selected">Selecciona els interessos</span>
+                                    <span class="multi-select-arrow">▼</span>
+                                </div>
+                                <div class="multi-select-options" id="interes-options">
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_1" name="interes" value="Catálogo de Cuevas de especial Interés de la C.V.">
+                                        <label for="interes_1">Catálogo de Cuevas de especial Interés de la C.V.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_2" name="interes" value="Cavidad artificial: Alberga alguna galería o zona natural.">
+                                        <label for="interes_2">Cavidad artificial: Alberga alguna galería o zona natural.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_3" name="interes" value="Cavidad artificial: MINA.">
+                                        <label for="interes_3">Cavidad artificial: MINA.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_4" name="interes" value="Cavidad artificial: Túnel, refugio, bodega, etc.">
+                                        <label for="interes_4">Cavidad artificial: Túnel, refugio, bodega, etc.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_5" name="interes" value="Cavidad con acceso restringido (puerta).">
+                                        <label for="interes_5">Cavidad con acceso restringido (puerta).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_6" name="interes" value="Cavidad degradada y/o contaminada.">
+                                        <label for="interes_6">Cavidad degradada y/o contaminada.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_7" name="interes" value="Cavidad documental o imaginaria NO LOCALIZADA.">
+                                        <label for="interes_7">Cavidad documental o imaginaria NO LOCALIZADA.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_8" name="interes" value="Cavidad impenetrable por su reducida sección.">
+                                        <label for="interes_8">Cavidad impenetrable por su reducida sección.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_9" name="interes" value="Cavidad natural que presenta alguna galería o zona artificial.">
+                                        <label for="interes_9">Cavidad natural que presenta alguna galería o zona artificial.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_10" name="interes" value="Circuito integral y/o varias bocas.">
+                                        <label for="interes_10">Circuito integral y/o varias bocas.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_11" name="interes" value="Desaparecida /Destruida / Boca totalmente tapada.">
+                                        <label for="interes_11">Desaparecida /Destruida / Boca totalmente tapada.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_12" name="interes" value="Guerra Civil Española (1936/39)">
+                                        <label for="interes_12">Guerra Civil Española (1936/39)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_13" name="interes" value="I.científico (1): Fauna invertebrada">
+                                        <label for="interes_13">I.científico (1): Fauna invertebrada</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_14" name="interes" value="I.científico (1): Flora subterránea y/o cerca de la boca.">
+                                        <label for="interes_14">I.científico (1): Flora subterránea y/o cerca de la boca.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_15" name="interes" value="I.científico (1): Hábitat de murciélagos">
+                                        <label for="interes_15">I.científico (1): Hábitat de murciélagos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_16" name="interes" value="I.científico (2): Adecuación y/o construcciones antiguas zona entrada">
+                                        <label for="interes_16">I.científico (2): Adecuación y/o construcciones antiguas zona entrada</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_17" name="interes" value="I.científico (2): Arte rupestre">
+                                        <label for="interes_17">I.científico (2): Arte rupestre</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_18" name="interes" value="I.científico (2): Catálogo yacimient. arqueológicos">
+                                        <label for="interes_18">I.científico (2): Catálogo yacimient. arqueológicos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_19" name="interes" value="I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)">
+                                        <label for="interes_19">I.científico (2): Catálogo yacimient. arqueológicos (Gener.Valenciana)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_20" name="interes" value="I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)">
+                                        <label for="interes_20">I.científico (2): Cavidad con USO histórico (refugios, fabr.pólvora)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_21" name="interes" value="I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).">
+                                        <label for="interes_21">I.científico (2): Elementos pecuarios (descansaderos /abrevaderos).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_22" name="interes" value="I.científico (2): Historias y leyendas populares.">
+                                        <label for="interes_22">I.científico (2): Historias y leyendas populares.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_23" name="interes" value="I.científico (2): Restos arqueológicos /paleontológicos">
+                                        <label for="interes_23">I.científico (2): Restos arqueológicos /paleontológicos</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_24" name="interes" value="I.científico (3): Característ. geológicas /hidrológicas especiales">
+                                        <label for="interes_24">I.científico (3): Característ. geológicas /hidrológicas especiales</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_25" name="interes" value="I.científico (3): Cavidades con riesgo de hipoxia.">
+                                        <label for="interes_25">I.científico (3): Cavidades con riesgo de hipoxia.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_26" name="interes" value="I.científico (3): Zonas o puntos con morfologías Hipogénicas.">
+                                        <label for="interes_26">I.científico (3): Zonas o puntos con morfologías Hipogénicas.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_27" name="interes" value="I.deportivo: Cavidad compleja técnicamente.">
+                                        <label for="interes_27">I.deportivo: Cavidad compleja técnicamente.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_28" name="interes" value="I.deportivo: Cavidad que no precisa material técnico.">
+                                        <label for="interes_28">I.deportivo: Cavidad que no precisa material técnico.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_29" name="interes" value="I.deportivo: Descensos verticales notables.">
+                                        <label for="interes_29">I.deportivo: Descensos verticales notables.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_30" name="interes" value="I.deportivo: Importantes volúmenes subterráneos.">
+                                        <label for="interes_30">I.deportivo: Importantes volúmenes subterráneos.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_31" name="interes" value="I.deportivo: Práctica del espeleobuceo.">
+                                        <label for="interes_31">I.deportivo: Práctica del espeleobuceo.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_32" name="interes" value="I.deportivo: Recorrido acuático y/o zonas inundadas">
+                                        <label for="interes_32">I.deportivo: Recorrido acuático y/o zonas inundadas</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_33" name="interes" value="I.deportivo: Recorrido subterráneo importante.">
+                                        <label for="interes_33">I.deportivo: Recorrido subterráneo importante.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_34" name="interes" value="I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)">
+                                        <label for="interes_34">I.lúdico: Cavidad con uso diverso en la actualidad (religioso, turismo)</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_35" name="interes" value="I.lúdico: Interés fotográfico y/o estético.">
+                                        <label for="interes_35">I.lúdico: Interés fotográfico y/o estético.</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_36" name="interes" value="Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).">
+                                        <label for="interes_36">Paraje Natural Municipal (Ver bibliografía - Tipo: Legislación).</label>
+                                    </div>
+                                    <div class="multi-select-option">
+                                        <input type="checkbox" id="interes_37" name="interes" value="Zona legislativamente protegida (en general)">
+                                        <label for="interes_37">Zona legislativamente protegida (en general)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descripcio">Descripció</label>
+                            <textarea id="descripcio" name="descripcio" 
+                                      placeholder="Descripció detallada de la cavitat..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Localització -->
+            <div id="localitzacio" class="tab-content">
+                <div class="form-section">
+                    <h3>Sistema de Coordenades</h3>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="zona_utm">Zona UTM</label>
+                            <select id="zona_utm" name="zona_utm">
+                                <option value="">Selecciona zona UTM</option>
+                                <option value="29T">29T</option>
+                                <option value="30T" selected>30T</option>
+                                <option value="31T">31T</option>
+                                <option value="29S">29S</option>
+                                <option value="30S">30S</option>
+                                <option value="31S">31S</option>
+                            </select>
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="datum">Datum</label>
+                            <select id="datum" name="datum">
+                                <option value="">Selecciona datum</option>
+                                <option value="ETRS89" selected>ETRS89</option>
+                                <option value="WGS84">WGS84</option>
+                                <option value="ED50">ED50</option>
+                            </select>
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="precisio">Precisió (m)</label>
+                            <select id="precisio" name="precisio">
+                                <option value="">Selecciona precisió</option>
+                                <option value="±1">±1 m</option>
+                                <option value="±5">±5 m</option>
+                                <option value="±10" selected>±10 m</option>
+                                <option value="±25">±25 m</option>
+                                <option value="±50">±50 m</option>
+                                <option value="±100">±100 m</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Coordenades UTM</h3>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="est_x">Est (X)</label>
+                            <input type="number" id="est_x" name="est_x" placeholder="Ex: 745234">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="nort_y">Nort (Y)</label>
+                            <input type="number" id="nort_y" name="nort_y" placeholder="Ex: 4532678">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="z">Altitud (Z)</label>
+                            <input type="number" id="z" name="z" placeholder="Altitud en metres">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Coordenades Geogràfiques</h3>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="latitud">Latitud (decimal)</label>
+                            <input type="number" step="any" id="latitud" name="latitud" 
+                                   placeholder="Ex: 40.123456" 
+                                   title="Format decimal: 40.123456">
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="longitud">Longitud (decimal)</label>
+                            <input type="number" step="any" id="longitud" name="longitud" 
+                                   placeholder="Ex: -0.123456" 
+                                   title="Format decimal: -0.123456">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="latitud_gms">Latitud (GMS)</label>
+                            <input type="text" id="latitud_gms" name="latitud_gms" 
+                                   placeholder="Ex: 40°07'24.4''N" 
+                                   title="Format graus, minuts, segons: 40°07'24.4''N">
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="longitud_gms">Longitud (GMS)</label>
+                            <input type="text" id="longitud_gms" name="longitud_gms" 
+                                   placeholder="Ex: 0°07'24.4''W" 
+                                   title="Format graus, minuts, segons: 0°07'24.4''W">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Mesures -->
+            <div id="mesures" class="tab-content">
+                <div class="form-section">
+                    <h3>Dimensions de la Cavitat</h3>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="recorregut_real">Recorregut Real (m)</label>
+                            <input type="number" step="0.1" id="recorregut_real" name="recorregut_real">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="recorregut_planta">Recorregut Planta (m)</label>
+                            <input type="number" step="0.1" id="recorregut_planta" name="recorregut_planta">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="profunditat">Profunditat (m)</label>
+                            <input type="number" step="0.1" id="profunditat" name="profunditat">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seccions dinàmiques per Pous -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3>Pous</h3>
+                        <button type="button" class="btn btn-primary btn-small" onclick="addPou()">+ Afegir Pou</button>
+                    </div>
+                    <div id="pous-container">
+                        <!-- Els pous s'afegiran dinàmicament aquí -->
+                    </div>
+                </div>
+
+                <!-- Seccions dinàmiques per Sales -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3>Sales</h3>
+                        <button type="button" class="btn btn-primary btn-small" onclick="addSala()">+ Afegir Sala</button>
+                    </div>
+                    <div id="sales-container">
+                        <!-- Les sales s'afegiran dinàmicament aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Altres Dades -->
+            <div id="altres" class="tab-content">
+                <div class="form-section">
+                    <h3>Documentació</h3>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="topos_arxius">Arxius de Topografia</label>
+                            <input type="file" id="topos_arxius" name="topos_arxius" 
+                                   multiple accept=".pdf,.svg,.png,.jpg,.jpeg,.dwg,.dxf"
+                                   onchange="handleFileSelection('topos')">
+                            <div class="file-info">Formats acceptats: PDF, SVG, PNG, JPG, DWG, DXF</div>
+                            <div id="topos_file_list" class="file-list"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="topos_comentari">Comentari Topografia</label>
+                            <textarea id="topos_comentari" name="topos_comentari" 
+                                      placeholder="Comentaris sobre les topografies..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="fotos_arxius">Arxius de Fotografies</label>
+                            <input type="file" id="fotos_arxius" name="fotos_arxius" 
+                                   multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
+                                   onchange="handleFileSelection('fotos')">
+                            <div class="file-info">Formats acceptats: JPG, PNG, GIF, BMP, WebP</div>
+                            <div id="fotos_file_list" class="file-list"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="fotos_comentari">Comentari Fotografies</label>
+                            <textarea id="fotos_comentari" name="fotos_comentari" 
+                                      placeholder="Comentaris sobre les fotografies..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Bibliografia</h3>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="biblio_article">Article</label>
+                            <input type="text" id="biblio_article" name="biblio_article">
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="biblio_autor">Autor</label>
+                            <input type="text" id="biblio_autor" name="biblio_autor">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="biblio_llibre">Llibre</label>
+                            <input type="text" id="biblio_llibre" name="biblio_llibre">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="biblio_editorial">Editorial</label>
+                            <input type="text" id="biblio_editorial" name="biblio_editorial">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="biblio_isbn">ISBN</label>
+                            <input type="text" id="biblio_isbn" name="biblio_isbn">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group third-width">
+                            <label for="biblio_data">Data</label>
+                            <input type="date" id="biblio_data" name="biblio_data">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="biblio_tema">Tema</label>
+                            <input type="text" id="biblio_tema" name="biblio_tema">
+                        </div>
+                        <div class="form-group third-width">
+                            <label for="biblio_tipus">Tipus</label>
+                            <input type="text" id="biblio_tipus" name="biblio_tipus">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="biblio_enllac">Enllaç Bibliografia</label>
+                            <input type="url" id="biblio_enllac" name="biblio_enllac">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">Netejar</button>
+                <button type="button" class="btn btn-primary" onclick="saveAsDraft()">Guardar Esborrany</button>
+                <button type="submit" class="btn btn-success btn-enviar">Guardar Cavitat</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Overlay de Carga -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner-large"></div>
+            <div class="loading-text">Guardant cavitat...</div>
+            <div class="loading-subtext">Processant arxius i dades, si us plau espera</div>
+        </div>
+    </div>
+
+    <!-- Indicador de Progreso de Archivos -->
+    <div id="fileProgress" class="file-progress">
+        <div class="file-progress-text">Processant arxius: <span id="fileProgressText">0/0</span></div>
+        <div class="file-progress-bar">
+            <div id="fileProgressFill" class="file-progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- Mensajes de Estado -->
+    <div id="successMessage" class="success-message">
+        <strong>✅ Èxit!</strong> La cavitat s'ha guardat correctament.
+    </div>
+
+    <div id="errorMessage" class="error-message">
+        <strong>❌ Error:</strong> <span id="errorText">Hi ha hagut un problema guardant la cavitat.</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1036,3 +1036,9 @@ function updateInteresDisplay() {
     }
 }
 
+// ====== NAVEGACIÓN ======
+function goToDashboard() {
+    console.log('🔄 Redirigiendo al dashboard...');
+    window.location.href = 'index.html';
+}
+
