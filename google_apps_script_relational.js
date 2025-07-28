@@ -1,4 +1,4 @@
-// GOOGLE APPS SCRIPT - VERSIÓN COMPLETA CON GOOGLE SHEETS
+// GOOGLE APPS SCRIPT - VERSIÓN RELACIONAL CON MÚLTIPLES HOJAS
 // Despliega como "Cualquier usuario"
 
 // CONFIGURACIÓN - CAMBIA ESTOS VALORES
@@ -79,7 +79,8 @@ function handleRequest(e) {
         timestamp: new Date().toISOString(),
         method: 'GET',
         spreadsheetConfigured: SPREADSHEET_ID !== 'TU_SPREADSHEET_ID_AQUI',
-        driveConfigured: DRIVE_FOLDER_ID !== 'TU_DRIVE_FOLDER_ID_AQUI'
+        driveConfigured: DRIVE_FOLDER_ID !== 'TU_DRIVE_FOLDER_ID_AQUI',
+        architecture: 'relational'
       };
     }
     
@@ -146,7 +147,8 @@ function saveToSheet(data) {
       fotosSubides: fileResults.fotosCount,
       toposSubides: fileResults.toposCount,
       driveFolder: `https://drive.google.com/drive/folders/${DRIVE_FOLDER_ID}`,
-      relatedDataSaved: relatedResults
+      relatedDataSaved: relatedResults,
+      architecture: 'relational'
     };
     
   } catch (error) {
@@ -304,11 +306,6 @@ function formatHeaders(sheet, columnsCount) {
   headerRange.setBackground('#E8F4F8');
   headerRange.setWrap(true);
   sheet.autoResizeColumns(1, columnsCount);
-}
-
-// Función legacy - mantener por compatibilidad
-function setupHeaders(sheet) {
-  setupCavitatsHeaders(sheet);
 }
 
 // Función para generar un ID único de cavitat
@@ -569,92 +566,6 @@ function contarElementos(data, prefix) {
   return count;
 }
 
-function prepareRowData(data, fileResults = null) {
-  const now = new Date();
-  
-  // Procesar intereses múltiples
-  let interesText = '';
-  if (data.interes_multiple) {
-    interesText = data.interes_multiple;
-  } else if (data.interes) {
-    interesText = data.interes;
-  }
-  
-  const rowData = [
-    // Información básica
-    now.toLocaleString('es-ES'),
-    data.codi_id || '',
-    data.nom || '',
-    data.municipi || '',
-    data.latitud || '',
-    data.longitud || '',
-    data.latitud_gms || '',
-    data.longitud_gms || '',
-    data.altitud || '',
-    data.precisio_gps || '',
-    
-    // Características
-    data.desenvolupament || '',
-    data.desnivell || '',
-    data.temperatura || '',
-    interesText,
-    data.estat_conservacio || '',
-    data.accessibilitat || '',
-    data.risc || '',
-    data.observacions || '',
-    
-    // Contextualització
-    data.context_geologic || '',
-    data.context_hidrologic || '',
-    data.context_espeleologic || ''
-  ];
-  
-  // Añadir datos de pous (máximo 3)
-  for (let i = 1; i <= 3; i++) {
-    rowData.push(
-      data[`pou_nom_${i}`] || '',
-      data[`pou_profunditat_${i}`] || '',
-      data[`pou_amplada_${i}`] || '',
-      data[`pou_observacions_${i}`] || ''
-    );
-  }
-  
-  // Añadir datos de sales (máximo 3)
-  for (let i = 1; i <= 3; i++) {
-    rowData.push(
-      data[`sala_nom_${i}`] || '',
-      data[`sala_descripcio_${i}`] || '',
-      data[`sala_llargaria_${i}`] || '',
-      data[`sala_amplaria_${i}`] || '',
-      data[`sala_altura_${i}`] || '',
-      data[`sala_superficie_${i}`] || '',
-      data[`sala_volum_${i}`] || '',
-      data[`sala_observacions_${i}`] || ''
-    );
-  }
-  
-  // Contar archivos y añadir enlaces
-  const toposCount = fileResults ? fileResults.toposCount : (data.topos_arxius ? data.topos_arxius.length : 0);
-  const fotosCount = fileResults ? fileResults.fotosCount : (data.fotos_arxius ? data.fotos_arxius.length : 0);
-  
-  let arxiusInfo = '';
-  if (toposCount > 0) arxiusInfo += `Topografies: ${toposCount}`;
-  if (fotosCount > 0) {
-    if (arxiusInfo) arxiusInfo += ', ';
-    arxiusInfo += `Fotos: ${fotosCount}`;
-  }
-  
-  // Enlaces a Drive
-  let driveLinks = '';
-  if (fileResults && fileResults.driveLinks.length > 0) {
-    driveLinks = fileResults.driveLinks.join('\n');
-  }
-  
-  rowData.push(toposCount, fotosCount, arxiusInfo, driveLinks);
-  
-  return rowData;
-}
-
 function formatNewRow(sheet, rowIndex) {
   const range = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn());
   
@@ -664,7 +575,7 @@ function formatNewRow(sheet, rowIndex) {
   }
   
   // Formatear números
-  const numericColumns = [5, 6, 9, 11, 12, 13]; // Latitud, Longitud, Altitud, etc.
+  const numericColumns = [6, 7, 10, 15, 16, 17, 22, 23, 24]; // Coordenadas y dimensiones
   numericColumns.forEach(col => {
     if (col <= sheet.getLastColumn()) {
       const cell = sheet.getRange(rowIndex, col);
@@ -675,7 +586,7 @@ function formatNewRow(sheet, rowIndex) {
   });
 }
 
-// Función para obtener estadísticas (opcional)
+// Función para obtener estadísticas
 function getStats() {
   try {
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -696,7 +607,8 @@ function getStats() {
       totalTopografias: getSheetRowCount(spreadsheet, TOPOS_SHEET_NAME),
       totalBibliografia: getSheetRowCount(spreadsheet, BIBLIO_SHEET_NAME),
       lastUpdate: new Date().toISOString(),
-      spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`
+      spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`,
+      architecture: 'relational'
     };
     
     return stats;
