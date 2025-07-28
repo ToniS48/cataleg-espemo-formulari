@@ -2,16 +2,16 @@
 // Este archivo contiene configuraciones que pueden ser públicas
 
 const CONFIG = {
-    // Configuración de desarrollo (para pruebas locales) - TEMPORAL CON GOOGLE HABILITADO
+    // Configuración de desarrollo (para pruebas locales) - NUEVA API CRUD COMPLETA
     development: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzHPyPvGHj5G3x5QTGs1ts4cZpbhbEwFeZQ2qhNwkSACJaQVjcjZE733GQiC0F4ei4MgA/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx5Krq3xq75Czn_3FkoPM9vVChVQAURAvpnAThS3us9tY7fOcSyTpd2CWYkMCK89bRuKQ/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: true
     },
     
     // Configuración de producción (para GitHub Pages)
     production: {
-        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzHPyPvGHj5G3x5QTGs1ts4cZpbhbEwFeZQ2qhNwkSACJaQVjcjZE733GQiC0F4ei4MgA/exec',
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx5Krq3xq75Czn_3FkoPM9vVChVQAURAvpnAThS3us9tY7fOcSyTpd2CWYkMCK89bRuKQ/exec',
         ENABLE_GOOGLE_INTEGRATION: true,
         DEBUG_MODE: false
     },
@@ -19,7 +19,7 @@ const CONFIG = {
     // Configuración general (siempre pública)
     general: {
         APP_NAME: 'Formulari ESPEMO',
-        VERSION: '1.0.8',
+        VERSION: '2.0.0',
         AUTHOR: 'ESPEMO',
         CONTACT: 'tonisoler@espemo.org'
     }

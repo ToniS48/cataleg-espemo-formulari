@@ -2,8 +2,8 @@
 // Configuración para conexión con Google Apps Script
 
 const API_CONFIG = {
-    // URL del Google Apps Script desplegado (NUEVA implementación con CORS y API)
-    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzHPyPvGHj5G3x5QTGs1ts4cZpbhbEwFeZQ2qhNwkSACJaQVjcjZE733GQiC0F4ei4MgA/exec',
+    // URL del Google Apps Script desplegado (NUEVA implementación CRUD COMPLETA)
+    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx5Krq3xq75Czn_3FkoPM9vVChVQAURAvpnAThS3us9tY7fOcSyTpd2CWYkMCK89bRuKQ/exec',
     
     // Endpoints disponibles
     ENDPOINTS: {
