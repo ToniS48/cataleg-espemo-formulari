@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API ESPEMO - CRUD Completo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.update {
+            background: #2196F3;
+        }
+        .button.delete {
+            background: #f44336;
+        }
+        .button.search {
+            background: #ff9800;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-color: #4CAF50;
+            background: #f0fff0;
+        }
+        .error {
+            border-color: #f44336;
+            background: #fff0f0;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .mode-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .mode-dev {
+            background: #ff9800;
+            color: white;
+        }
+        .mode-prod {
+            background: #4CAF50;
+            color: white;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Indicador de modo -->
+    <div id="modeIndicator" class="mode-indicator"></div>
+    
+    <div class="container">
+        <h1>🧪 Test API ESPEMO - CRUD Completo</h1>
+        <p>Página de pruebas para verificar todas las funcionalidades del API de Google Apps Script.</p>
+        
+        <!-- Información del API -->
+        <div class="test-section">
+            <h3>📋 Información del API</h3>
+            <button class="button" onclick="testPing()">🏓 Ping API</button>
+            <button class="button" onclick="testStats()">📊 Obtener Estadísticas</button>
+            <button class="button" onclick="testMunicipis()">🏘️ Obtener Municipios</button>
+            <div id="infoResult" class="result"></div>
+        </div>
+        
+        <!-- Cavitats - CRUD -->
+        <div class="test-section">
+            <h3>🏔️ Cavitats - CRUD Completo</h3>
+            
+            <!-- Lectura -->
+            <div>
+                <h4>📋 Lectura</h4>
+                <button class="button" onclick="testGetAllCavitats()">Obtener Todas las Cavitats</button>
+                <button class="button search" onclick="testSearchCavitats()">🔍 Búsqueda Avanzada</button>
+                
+                <div class="input-group">
+                    <label>ID Cavitat:</label>
+                    <input type="text" id="cavitatId" placeholder="CAV0001" value="CAV0001">
+                    <button class="button" onclick="testGetCavitatById()">Obtener por ID</button>
+                </div>
+            </div>
+            
+            <!-- Creación -->
+            <div>
+                <h4>➕ Creación</h4>
+                <div class="input-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="newCavitatNom" placeholder="Cueva de Prueba" value="Cueva de Prueba">
+                </div>
+                <div class="input-group">
+                    <label>Municipio:</label>
+                    <input type="text" id="newCavitatMunicipi" placeholder="Barcelona" value="Barcelona">
+                </div>
+                <div class="input-group">
+                    <label>Profundidad:</label>
+                    <input type="number" id="newCavitatProfunditat" placeholder="25" value="25">
+                </div>
+                <button class="button" onclick="testCreateCavitat()">Crear Nueva Cavitat</button>
+            </div>
+            
+            <!-- Actualización -->
+            <div>
+                <h4>✏️ Actualización</h4>
+                <div class="input-group">
+                    <label>ID a actualizar:</label>
+                    <input type="text" id="updateCavitatId" placeholder="CAV0001" value="CAV0001">
+                </div>
+                <div class="input-group">
+                    <label>Nueva profundidad:</label>
+                    <input type="number" id="updateCavitatProfunditat" placeholder="30" value="30">
+                </div>
+                <button class="button update" onclick="testUpdateCavitat()">Actualizar Cavitat</button>
+            </div>
+            
+            <!-- Eliminación -->
+            <div>
+                <h4>🗑️ Eliminación</h4>
+                <div class="input-group">
+                    <label>ID a eliminar:</label>
+                    <input type="text" id="deleteCavitatId" placeholder="CAV0002">
+                </div>
+                <button class="button delete" onclick="testDeleteCavitat()">Eliminar Cavitat</button>
+            </div>
+            
+            <div id="cavitatsResult" class="result"></div>
+        </div>
+        
+        <!-- Pozos - CRUD -->
+        <div class="test-section">
+            <h3>🕳️ Pozos - CRUD Completo</h3>
+            <button class="button" onclick="testGetAllPozos()">Obtener Todos los Pozos</button>
+            <button class="button" onclick="testCreatePozo()">Crear Pozo</button>
+            <button class="button update" onclick="testUpdatePozo()">Actualizar Pozo</button>
+            <button class="button delete" onclick="testDeletePozo()">Eliminar Pozo</button>
+            <div id="pozosResult" class="result"></div>
+        </div>
+        
+        <!-- Salas - CRUD -->
+        <div class="test-section">
+            <h3>🏛️ Salas - CRUD Completo</h3>
+            <button class="button" onclick="testGetAllSalas()">Obtener Todas las Salas</button>
+            <button class="button" onclick="testCreateSala()">Crear Sala</button>
+            <button class="button update" onclick="testUpdateSala()">Actualizar Sala</button>
+            <button class="button delete" onclick="testDeleteSala()">Eliminar Sala</button>
+            <div id="salasResult" class="result"></div>
+        </div>
+        
+        <!-- Fotos - CRUD -->
+        <div class="test-section">
+            <h3>📸 Fotos - CRUD Completo</h3>
+            <button class="button" onclick="testGetAllFotos()">Obtener Todas las Fotos</button>
+            <button class="button" onclick="testCreateFoto()">Crear Foto</button>
+            <button class="button update" onclick="testUpdateFoto()">Actualizar Foto</button>
+            <button class="button delete" onclick="testDeleteFoto()">Eliminar Foto</button>
+            <div id="fotosResult" class="result"></div>
+        </div>
+        
+        <!-- Topografías - CRUD -->
+        <div class="test-section">
+            <h3>🗺️ Topografías - CRUD Completo</h3>
+            <button class="button" onclick="testGetAllTopos()">Obtener Todas las Topografías</button>
+            <button class="button" onclick="testCreateTopo()">Crear Topografía</button>
+            <button class="button update" onclick="testUpdateTopo()">Actualizar Topografía</button>
+            <button class="button delete" onclick="testDeleteTopo()">Eliminar Topografía</button>
+            <div id="toposResult" class="result"></div>
+        </div>
+        
+        <!-- Bibliografía - CRUD -->
+        <div class="test-section">
+            <h3>📚 Bibliografía - CRUD Completo</h3>
+            <button class="button" onclick="testGetAllBiblio()">Obtener Toda la Bibliografía</button>
+            <button class="button" onclick="testCreateBiblio()">Crear Bibliografía</button>
+            <button class="button update" onclick="testUpdateBiblio()">Actualizar Bibliografía</button>
+            <button class="button delete" onclick="testDeleteBiblio()">Eliminar Bibliografía</button>
+            <div id="biblioResult" class="result"></div>
+        </div>
+        
+        <!-- Utilidades -->
+        <div class="test-section">
+            <h3>🔧 Utilidades</h3>
+            <button class="button" onclick="testBackup()">💾 Crear Backup</button>
+            <button class="button" onclick="testRestore()">🔄 Restaurar Backup</button>
+            <div id="utilsResult" class="result"></div>
+        </div>
+        
+        <!-- Prueba Completa -->
+        <div class="test-section">
+            <h3>🧪 Prueba Completa del Sistema</h3>
+            <button class="button" onclick="runCompleteTest()" style="font-size: 16px; padding: 15px 30px;">🚀 Ejecutar Todas las Pruebas</button>
+            <div id="completeTestResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Scripts necesarios -->
+    <script src="config.js"></script>
+    <script src="api-service-COMPLETE.js"></script>
+    
+    <script>
+        // Mostrar modo actual
+        function updateModeIndicator() {
+            const indicator = document.getElementById('modeIndicator');
+            const devMode = isDevMode();
+            indicator.textContent = devMode ? '🔧 DESARROLLO' : '🌍 PRODUCCIÓN';
+            indicator.className = `mode-indicator ${devMode ? 'mode-dev' : 'mode-prod'}`;
+        }
+        
+        // Función para mostrar resultados
+        function showResult(elementId, result, success = null) {
+            const element = document.getElementById(elementId);
+            
+            if (success === null) {
+                success = result && result.success;
+            }
+            
+            element.className = `result ${success ? 'success' : 'error'}`;
+            element.innerHTML = `
+                <div class="status">${success ? '✅ ÉXITO' : '❌ ERROR'}</div>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+        }
+        
+        // ===== FUNCIONES DE INFORMACIÓN =====
+        
+        async function testPing() {
+            try {
+                const result = await apiService.ping();
+                showResult('infoResult', result);
+            } catch (error) {
+                showResult('infoResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testStats() {
+            try {
+                const result = await apiService.getStats();
+                showResult('infoResult', result);
+            } catch (error) {
+                showResult('infoResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testMunicipis() {
+            try {
+                const result = await apiService.getMunicipis();
+                showResult('infoResult', result);
+            } catch (error) {
+                showResult('infoResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE CAVITATS =====
+        
+        async function testGetAllCavitats() {
+            try {
+                const result = await apiService.getAllCavitats();
+                showResult('cavitatsResult', result);
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testGetCavitatById() {
+            try {
+                const id = document.getElementById('cavitatId').value;
+                const result = await apiService.getCavitatById(id);
+                showResult('cavitatsResult', result);
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testSearchCavitats() {
+            try {
+                const searchParams = {
+                    municipi: 'Barcelona',
+                    profunditat_min: 10,
+                    text: 'cueva'
+                };
+                const result = await apiService.searchCavitats(searchParams);
+                showResult('cavitatsResult', { searchParams, ...result });
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreateCavitat() {
+            try {
+                const newCavitat = {
+                    Nom: document.getElementById('newCavitatNom').value,
+                    Municipi: document.getElementById('newCavitatMunicipi').value,
+                    Profunditat: parseInt(document.getElementById('newCavitatProfunditat').value),
+                    Coordenades_UTM_X: 423456,
+                    Coordenades_UTM_Y: 4612345,
+                    Descripcio: 'Cavitat creada desde test API'
+                };
+                const result = await apiService.createCavitat(newCavitat);
+                showResult('cavitatsResult', { newCavitat, ...result });
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdateCavitat() {
+            try {
+                const id = document.getElementById('updateCavitatId').value;
+                const updateData = {
+                    Profunditat: parseInt(document.getElementById('updateCavitatProfunditat').value),
+                    Descripcio: 'Actualizada desde test API'
+                };
+                const result = await apiService.updateCavitat(id, updateData);
+                showResult('cavitatsResult', { id, updateData, ...result });
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeleteCavitat() {
+            try {
+                const id = document.getElementById('deleteCavitatId').value;
+                if (!id) {
+                    showResult('cavitatsResult', { error: 'ID requerido' }, false);
+                    return;
+                }
+                const result = await apiService.deleteCavitat(id);
+                showResult('cavitatsResult', { id, ...result });
+            } catch (error) {
+                showResult('cavitatsResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE POZOS =====
+        
+        async function testGetAllPozos() {
+            try {
+                const result = await apiService.getAllPozos({ cavitat_id: 'CAV0001' });
+                showResult('pozosResult', result);
+            } catch (error) {
+                showResult('pozosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreatePozo() {
+            try {
+                const newPozo = {
+                    cavitat_id: 'CAV0001',
+                    Nom: 'Pozo de Prueba',
+                    Profunditat: 12,
+                    Diametro: 2.0
+                };
+                const result = await apiService.createPozo(newPozo);
+                showResult('pozosResult', { newPozo, ...result });
+            } catch (error) {
+                showResult('pozosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdatePozo() {
+            try {
+                const result = await apiService.updatePozo('POZ0001', { Profunditat: 15 });
+                showResult('pozosResult', result);
+            } catch (error) {
+                showResult('pozosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeletePozo() {
+            try {
+                const result = await apiService.deletePozo('POZ0002');
+                showResult('pozosResult', result);
+            } catch (error) {
+                showResult('pozosResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE SALAS =====
+        
+        async function testGetAllSalas() {
+            try {
+                const result = await apiService.getAllSalas({ cavitat_id: 'CAV0001' });
+                showResult('salasResult', result);
+            } catch (error) {
+                showResult('salasResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreateSala() {
+            try {
+                const newSala = {
+                    cavitat_id: 'CAV0001',
+                    Nom: 'Sala de Prueba',
+                    Longitud: 18,
+                    Amplada: 12,
+                    Alçada: 6
+                };
+                const result = await apiService.createSala(newSala);
+                showResult('salasResult', { newSala, ...result });
+            } catch (error) {
+                showResult('salasResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdateSala() {
+            try {
+                const result = await apiService.updateSala('SAL0001', { Alçada: 10 });
+                showResult('salasResult', result);
+            } catch (error) {
+                showResult('salasResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeleteSala() {
+            try {
+                const result = await apiService.deleteSala('SAL0002');
+                showResult('salasResult', result);
+            } catch (error) {
+                showResult('salasResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE FOTOS =====
+        
+        async function testGetAllFotos() {
+            try {
+                const result = await apiService.getAllFotos({ cavitat_id: 'CAV0001' });
+                showResult('fotosResult', result);
+            } catch (error) {
+                showResult('fotosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreateFoto() {
+            try {
+                const newFoto = {
+                    cavitat_id: 'CAV0001',
+                    Nom: 'Foto de Prueba',
+                    URL: 'https://example.com/test-foto.jpg',
+                    Descripcio: 'Foto creada desde test API'
+                };
+                const result = await apiService.createFoto(newFoto);
+                showResult('fotosResult', { newFoto, ...result });
+            } catch (error) {
+                showResult('fotosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdateFoto() {
+            try {
+                const result = await apiService.updateFoto('FOT0001', { Descripcio: 'Descripción actualizada' });
+                showResult('fotosResult', result);
+            } catch (error) {
+                showResult('fotosResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeleteFoto() {
+            try {
+                const result = await apiService.deleteFoto('FOT0002');
+                showResult('fotosResult', result);
+            } catch (error) {
+                showResult('fotosResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE TOPOGRAFÍAS =====
+        
+        async function testGetAllTopos() {
+            try {
+                const result = await apiService.getAllTopos({ cavitat_id: 'CAV0001' });
+                showResult('toposResult', result);
+            } catch (error) {
+                showResult('toposResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreateTopo() {
+            try {
+                const newTopo = {
+                    cavitat_id: 'CAV0001',
+                    Nom: 'Topografía de Prueba',
+                    Tipus: 'Planta',
+                    URL: 'https://example.com/test-topo.pdf'
+                };
+                const result = await apiService.createTopo(newTopo);
+                showResult('toposResult', { newTopo, ...result });
+            } catch (error) {
+                showResult('toposResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdateTopo() {
+            try {
+                const result = await apiService.updateTopo('TOP0001', { Tipus: 'Sección' });
+                showResult('toposResult', result);
+            } catch (error) {
+                showResult('toposResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeleteTopo() {
+            try {
+                const result = await apiService.deleteTopo('TOP0002');
+                showResult('toposResult', result);
+            } catch (error) {
+                showResult('toposResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE BIBLIOGRAFÍA =====
+        
+        async function testGetAllBiblio() {
+            try {
+                const result = await apiService.getAllBiblio({ cavitat_id: 'CAV0001' });
+                showResult('biblioResult', result);
+            } catch (error) {
+                showResult('biblioResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testCreateBiblio() {
+            try {
+                const newBiblio = {
+                    cavitat_id: 'CAV0001',
+                    Titol: 'Estudio de Prueba',
+                    Autor: 'Test Author',
+                    Any: 2025
+                };
+                const result = await apiService.createBiblio(newBiblio);
+                showResult('biblioResult', { newBiblio, ...result });
+            } catch (error) {
+                showResult('biblioResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testUpdateBiblio() {
+            try {
+                const result = await apiService.updateBiblio('BIB0001', { Any: 2026 });
+                showResult('biblioResult', result);
+            } catch (error) {
+                showResult('biblioResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testDeleteBiblio() {
+            try {
+                const result = await apiService.deleteBiblio('BIB0002');
+                showResult('biblioResult', result);
+            } catch (error) {
+                showResult('biblioResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== FUNCIONES DE UTILIDADES =====
+        
+        async function testBackup() {
+            try {
+                const result = await apiService.backup();
+                showResult('utilsResult', result);
+            } catch (error) {
+                showResult('utilsResult', { error: error.message }, false);
+            }
+        }
+        
+        async function testRestore() {
+            try {
+                const result = await apiService.restore('backup_test_123');
+                showResult('utilsResult', result);
+            } catch (error) {
+                showResult('utilsResult', { error: error.message }, false);
+            }
+        }
+        
+        // ===== PRUEBA COMPLETA =====
+        
+        async function runCompleteTest() {
+            const resultElement = document.getElementById('completeTestResult');
+            resultElement.innerHTML = '<div class="status">🚀 Ejecutando pruebas completas...</div>';
+            
+            const tests = [
+                { name: 'Ping API', fn: () => apiService.ping() },
+                { name: 'Estadísticas', fn: () => apiService.getStats() },
+                { name: 'Municipios', fn: () => apiService.getMunicipis() },
+                { name: 'Todas las Cavitats', fn: () => apiService.getAllCavitats() },
+                { name: 'Búsqueda Cavitats', fn: () => apiService.searchCavitats({ municipi: 'Barcelona' }) },
+                { name: 'Todos los Pozos', fn: () => apiService.getAllPozos() },
+                { name: 'Todas las Salas', fn: () => apiService.getAllSalas() },
+                { name: 'Todas las Fotos', fn: () => apiService.getAllFotos() },
+                { name: 'Todas las Topografías', fn: () => apiService.getAllTopos() },
+                { name: 'Toda la Bibliografía', fn: () => apiService.getAllBiblio() },
+                { name: 'Backup', fn: () => apiService.backup() }
+            ];
+            
+            const results = [];
+            
+            for (const test of tests) {
+                try {
+                    console.log(`Ejecutando: ${test.name}`);
+                    const result = await test.fn();
+                    results.push({
+                        name: test.name,
+                        success: result && result.success,
+                        result: result
+                    });
+                } catch (error) {
+                    results.push({
+                        name: test.name,
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            
+            showResult('completeTestResult', {
+                summary: `${successCount}/${totalCount} pruebas exitosas`,
+                results: results
+            }, successCount === totalCount);
+        }
+        
+        // Inicializar cuando cargue la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateModeIndicator();
+            console.log('🧪 Página de test API ESPEMO cargada');
+        });
+        
+    </script>
+</body>
+</html>
